@@ -34,26 +34,11 @@ from SPConvNets.models.model_util import *
 class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
     def __init__(self, params):
         super(ClsSO3ConvModel, self).__init__()
-
-        ''' Construct backbone model '''
-        # get backbone model
-        # self.backbone = nn.ModuleList()
-        # for block_param in params['backbone']:  # backbone
-        #     self.backbone.append(M.BasicSO3PoseConvBlock(block_param))
-        # print(f"number of convs in the backbone: {len(self.backbone)}")
-        # self.outblock = M.ClsOutBlockR(params['outblock'])
-        # output classification block
-
         ''' EPN for global rotation factorization '''
         self.glb_backbone = nn.ModuleList()
         # use equi as the backbone for global pose factorization
         for block_param in params['backbone']:
             self.glb_backbone.append(M.BasicSO3PoseConvBlock(block_param))
-        # for block_param in params['backbone']:
-        #     self.glb_backbone.append(Mso3.BasicSO3ConvBlock(block_param))
-        ''' PointNet for feature aggregation '''  # global features
-        # self.glb_outblock = Mso3.ClsOutBlockPointnet(params['outblock'])
-        # self.glb_outblock = Mso3.InvOutBlockOurs(params['outblock'], norm=1, pooling_method='max')
 
         self.backbone = nn.ModuleList()
         for block_param in params['kpconv_backbone']:
@@ -124,12 +109,6 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
 
         self.stage = params['general']['cur_stage']
 
-        # pts_to_real_pts = {128: 146, 256: 258, 512: 578}
-
-        # if self.recon_prior in [2, 3]:
-        #     self.sphere_recon_M = pts_to_real_pts[self.recon_part_M]
-        #     self.recon_part_M = self.sphere_recon_M
-
         self.log_fn = f"{self.exp_indicator}_{self.shape_type}_out_feats_weq_wrot_{self.global_rot}_rel_rot_factor_{self.rot_factor}_equi_{self.use_equi}_model_{self.model_type}_decoder_{self.decoder_type}_inv_attn_{self.inv_attn}_orbit_attn_{self.orbit_attn}_reconp_{self.recon_prior}_topk_{self.topk}_num_iters_{self.num_iters}_npts_{self.npoints}_perpart_npts_{self.part_pred_npoints}_bsz_{self.batch_size}_init_lr_{self.init_lr}"
         # self.log_fn = os.path.join("/share/xueyi/", self.log_fn) # file name for logging
         # self.log_fn
@@ -178,12 +157,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
         # slot_outblock: invariant feature output block for each slot
         self.slot_outblock = nn.ModuleList()
         for i_s in range(self.num_slots):
-            # we should not use the pooled features directly since weights for different orbits should be determined by all points in the slot
-            # slot invariant feature output block
-            # use_abs_pos: whether to use absolute points to decode positions
-            # we should set it to False ----
-            # return_point_pooling_feature = True if self.pred_pv_equiv else False
-            return_point_pooling_feature = True # if self.pred_pv_equiv else False
+            return_point_pooling_feature = True
             # whether to return point pooling features
             self.slot_outblock.append(
                 Mso3.InvOutBlockOursWithMask(params['outblock'], norm=1, pooling_method='attention', use_pointnet=True, use_abs_pos=use_abs_pos, return_point_pooling_feature=return_point_pooling_feature) # whether to use abs pos
@@ -426,7 +400,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
                 dot_axises_loss_cur_slot_pair = -dot_axises.mean(dim=-1).mean(dim=-1) * slot_weights[:,
                                                                                         i_s_a] * slot_weights[:, i_s_b]
                 dot_axises_loss += dot_axises_loss_cur_slot_pair.mean()
-                print(f"slot_a: {i_s_a}, slot_b: {i_s_b}, loss: {dot_axises_loss_cur_slot_pair.mean().item()}")
+                # print(f"slot_a: {i_s_a}, slot_b: {i_s_b}, loss: {dot_axises_loss_cur_slot_pair.mean().item()}")
                 # todo: theta loss
                 cur_rel_rot_Rs.append(rel_rot_slot_a_b.unsqueeze(1))
                 idxx += 1
@@ -710,14 +684,6 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             # cur_slot_predicted_flow: bz x M x 3
             cur_slot_predicted_flow = cur_slot_predicted_flow.contiguous().transpose(1, 2).contiguous() - 0.5
 
-            ''''''
-            ## Use predicted as deformation flow ##
-            # cur_slot_predicted_flow = cur_slot_predicted_flow * 2.0 # * 0.2
-            # cur_slot_category_pts = safe_transpose(cur_slot_category_pts, 1, 2)
-            # cur_slot_deformed_pts = cur_slot_category_pts + cur_slot_predicted_flow
-            ## Use predicted as deformation flow ##
-
-            ''''''
             ## Use predicted as points ##
             cur_slot_deformed_pts = cur_slot_predicted_flow
             ## Use predicted as points ##
@@ -758,7 +724,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
 
             self.slot_prior_rep_queue[cur_st: cur_ed] = updated_feats
         else:
-            print("???")
+            # print("???")
             self.slot_prior_rep_queue[cur_st:] = updated_feats[: self.queue_len - cur_st]
             self.slot_prior_rep_queue[: cur_ed - self.queue_len] = updated_feats[self.queue_len - cur_st:]
         self.queue_st = (self.queue_st + bz) % self.queue_len
@@ -826,8 +792,8 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
         orbit_mask = torch.zeros_like(dot_product)
         orbit_mask[dot_product < 0.3] = 1.
         # if self.local_rank == 0:
-        print(f"current axis prior: {self.axis_prior_slot_pairs.data}")
-        print(f"mean of oribt mask: {torch.mean(orbit_mask).item()}")
+        # print(f"current axis prior: {self.axis_prior_slot_pairs.data}")
+        # print(f"mean of oribt mask: {torch.mean(orbit_mask).item()}")
         return orbit_mask, axises
 
     # slot pair axis prior
@@ -858,8 +824,8 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             cur_queue = self.slot_pair_mult_R_queue.data[: self.queue_st]
         # cur_queue: queue_len x n_s x 3 x 3
         # dot_rots_cur_queue: bz x queue_len x n_s x na x na x 3 x 3
-        print(
-            f"Current queue size: {cur_queue.size()}, queue len: {self.queue_len}, queue total len: {self.queue_tot_len}")
+        # print(
+        #     f"Current queue size: {cur_queue.size()}, queue len: {self.queue_len}, queue total len: {self.queue_tot_len}")
         dot_rots_cur_queue = torch.matmul(dot_anchor_part_rots_anchors.unsqueeze(1),
                                           cur_queue.view(1, self.queue_len, self.num_slots, 1, 1, 3, 3).contiguous())
         dot_ax_x, dot_ax_y, dot_ax_z = dot_rots_cur_queue[..., 2, 1] - dot_rots_cur_queue[..., 1, 2], \
@@ -1043,7 +1009,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
         avg_selected_dots = selected_dots.mean(dim=-1)
 
         self.avg_selected_dots = avg_selected_dots
-        print(f"avg_selected_dots: {avg_selected_dots}")
+        # print(f"avg_selected_dots: {avg_selected_dots}")
 
         # anchor_part_anchors_axises: bz x n_s x 3
         # print(f"anchor_part_anchors_axises: {anchor_part_anchors_axises.size()}, res_selected_anchors: {res_selected_anchors.size()}")
@@ -1069,7 +1035,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             else:
                 ''' Save slot pair axis prior --- for single shape selection '''
                 self.update_slot_pair_axis_prior(anchor_part_anchors_axises)
-                print(self.axis_prior_slot_pairs.data)
+                # print(self.axis_prior_slot_pairs.data)
                 # # if self.local_rank == 0:
                 np.save(f"axis_prior_{self.local_rank}.npy", self.axis_prior_slot_pairs.data.detach().cpu().numpy())
                 pass
@@ -1079,11 +1045,6 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
 
     ''' Select orbits via soem other strategies '''
     def select_slot_orbits(self, slot_recon_loss, slot_pred_rots):
-        # slot_recon_loss: bz x n_s x na # the reconstruction loss for each (slot, anchor) pair
-        # slot_pred_rots: bz x n_s x na x 3 x 3
-        # selected_orbit: bz
-        # if len(slot_recon_loss.size())
-        # print(slot_recon_loss.size())
 
         ''' If using queue to involve other shapes '''
         if self.use_axis_queue == 1:
@@ -1225,7 +1186,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
         avg_selected_dots = selected_dots.mean(dim=-1)
 
         self.avg_selected_dots = avg_selected_dots
-        print(f"avg_selected_dots: {avg_selected_dots}")
+        # print(f"avg_selected_dots: {avg_selected_dots}")
 
         # anchor_part_anchors_axises: bz x n_s x 3
         # print(f"anchor_part_anchors_axises: {anchor_part_anchors_axises.size()}, res_selected_anchors: {res_selected_anchors.size()}")
@@ -1249,7 +1210,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             else:
                 ''' Save slot pair axis prior --- for single shape selection '''
                 self.update_slot_pair_axis_prior(anchor_part_anchors_axises)
-                print(self.axis_prior_slot_pairs.data)
+                # print(self.axis_prior_slot_pairs.data)
                 # if self.local_rank == 0:
                 np.save(f"axis_prior_{self.local_rank}.npy", self.axis_prior_slot_pairs.data.detach().cpu().numpy())
                 ''' Save slot pair axis prior --- for single shape selection '''
@@ -1402,12 +1363,12 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             minn_chamfer_recon_to_ori = batched_index_select(chamfer_recon_to_ori, indices=glb_orbit.unsqueeze(-1), dim=1).squeeze(-1)
             minn_chamfer_ori_to_recon = batched_index_select(chamfer_ori_to_recon, indices=glb_orbit.unsqueeze(-1), dim=1).squeeze(-1)
             self.glb_recon_ori_dist = (torch.sqrt(minn_chamfer_recon_to_ori) + torch.sqrt(minn_chamfer_ori_to_recon)).mean() * 0.5
-            print(self.glb_recon_ori_dist)
+            # print(self.glb_recon_ori_dist)
             # minn_glb_chamfer for optimization. & glb_orbit for global orbit selection/pose transformed?
             # selected global chamfer distance and global orbit...
 
             self.glb_ori_to_recon_dist = torch.sqrt(minn_chamfer_ori_to_recon).mean()  # minn chamfer ori to recon...
-            print(f"glb_ori_to_recon, L1: {float(self.glb_ori_to_recon_dist.item())}")
+            # print(f"glb_ori_to_recon, L1: {float(self.glb_ori_to_recon_dist.item())}")
 
             # should minimize the selected global reconstruction chamfer distance
             # selected_glb_R: bz x 3 x 3
@@ -1619,9 +1580,6 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             # bz x (n_s - 1) x 1; bz x (n_s - 1)
             pair_confidences = batched_index_select(values=pair_confidences, indices=tot_ips.long(), dim=1)
 
-            # tot_ips: selected pair indexes for the spanning tree
-            # print(f"Total pair index.shape: {tot_ips.size()}")
-            # print(f"Total pair index: {tot_ips}")
             # spanning tree
             # it is a category-level order
             slot_orders = []
@@ -1848,69 +1806,6 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             mtx_slot_R = []
             slot_T = []
 
-            # todo: here we just use the axis predicted for the first slot as the axis for the whole shape... any other solutions..?
-            ''' A chain-like transformation modeling --- transformation chain modeling version 2 '''
-            # for i_s in range(self.num_slots): # get slots' rotations
-            #     cur_slot_idxes = slot_orders[:, i_s]
-            #     # cur_slot_central_points: bz x 3
-            #     cur_slot_central_points = batched_index_select(values=central_points, indices=cur_slot_idxes.unsqueeze(1), dim=1).squeeze(1)
-            #     cur_slot_pvv_points = batched_index_select(values=pv_points,
-            #                                                    indices=cur_slot_idxes.unsqueeze(1), dim=1).squeeze(1)
-            #     # if i_s == self.num_slots - 1:
-            #     if i_s == self.num_slots:
-            #         cur_slot_R_mtx = torch.eye(3, dtype=torch.float32).cuda().contiguous().unsqueeze(0).unsqueeze(
-            #                 0).unsqueeze(0).repeat(bz, 1, cur_kanchor, 1, 1).contiguous()
-            #         cur_slot_trans = cur_slot_central_points.unsqueeze(1).unsqueeze(-2).contiguous().repeat(1, 1, cur_kanchor, 1).contiguous()
-            #     else:
-            #         # cur_slot_idxes: bz
-            #         defined_axis = slot_axis[:, 0, :] # defined_axis: bz x 3 # todo: is it a proper shape for axis as input for computing rotation matrices?
-            #         # cur_slot_angles: bz x 1 x na; bz x 1 x na
-            #         cur_slot_angles = batched_index_select(values=slot_R, indices=cur_slot_idxes.long().unsqueeze(-1), dim=1).squeeze(1)
-            #         cur_slot_R_mtx = torch.sigmoid(cur_slot_angles) * math.pi * self.rot_angle_factor
-            #         if self.shape_type == 'drawer':
-            #             cur_slot_R_mtx = cur_slot_R_mtx * 0.0
-            #         cur_slot_R_mtx = compute_rotation_matrix_from_angle(
-            #             cur_anchors,
-            #             safe_transpose(cur_slot_R_mtx, -1, -2).view(1 * 1, cur_kanchor, -1),
-            #             defined_axis=defined_axis
-            #         ).contiguous().view(bz, 1, cur_kanchor, 3, 3).contiguous()
-            #
-            #
-            #
-            #         # cur_slot_pv_point_idx = i_s if i_s < self.num_slots // 2 else i_s - self.num_slots #
-            #         cur_slot_pv_point_idx = i_s if i_s < self.num_slots - 1 else self.num_slots - 2
-            #         cur_slot_pv_points = pair_pivot_points[:, cur_slot_pv_point_idx, :] # bz x 3 for the pivot point of this slot...
-            #
-            #
-            #
-            #         # if i_s == self.num_slots - 1:
-            #         #     cur_slot_idxes = slot_orders[:, i_s - 1]
-            #         #     cur_slot_pvv_points = batched_index_select(values=pv_points,
-            #         #                                                indices=cur_slot_idxes.unsqueeze(1), dim=1).squeeze(
-            #         #         1)
-            #         #     cur_slot_pvv_points = cur_slot_pvv_points.detach()
-            #         # cur_slot_pv_points = cur_slot_pvv_points
-            #
-            #
-            #
-            #         # cur_slot_R_mtx: bz x 1 x na x 3 x 3; central_points: bz x 3 --> bz x 1 x na x 3;
-            #         cur_slot_trans = 1.0 * torch.matmul(cur_slot_R_mtx, (cur_slot_central_points - cur_slot_pv_points).unsqueeze(1).unsqueeze(1).unsqueeze(-1)) + (cur_slot_pv_points).unsqueeze(1).unsqueeze(1).unsqueeze(-1)
-            #         cur_slot_trans = cur_slot_trans.squeeze(-1) # cur_slot_trans
-            #
-            #         # current_mtx and current_trans # mtx_slot_R; prev_i_s
-            #         # cur_slot_R: bz x 1 x na x 3 x 3; cur_slot_trans: bz x 1 x na x 3
-            #         if i_s < self.num_slots - 1:
-            #             for prev_i_s in range(len(mtx_slot_R)):
-            #                 # apply current predicted rotation matrix to previous R's rotation matrix...
-            #                 mtx_slot_R[prev_i_s] = torch.matmul(cur_slot_R_mtx, mtx_slot_R[prev_i_s])
-            #                 # apply current predicted rotation and translation to previous translation vector
-            #                 # use translations for previous slots other than current slot...
-            #                 cur_prev_slots_trans = 1.0 * torch.matmul(cur_slot_R_mtx, (-cur_slot_pv_points).unsqueeze(1).unsqueeze(1).unsqueeze(-1)) + (cur_slot_pv_points).unsqueeze(1).unsqueeze(1).unsqueeze(-1)
-            #                 cur_prev_slots_trans = cur_prev_slots_trans.squeeze(-1)
-            #                 slot_T[prev_i_s] = torch.matmul(cur_slot_R_mtx, slot_T[prev_i_s].unsqueeze(-1)).contiguous().squeeze(-1) + cur_prev_slots_trans
-            #     # slot_T
-            #     mtx_slot_R.append(cur_slot_R_mtx)
-            #     slot_T.append(cur_slot_trans)
 
             ''' An inter-chain-like transformation modeling --- transformation chain modeling version 1 '''
             # # R: bz
@@ -2388,7 +2283,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             # selected_minn_dist_ori_to_recon: bz x N
             selected_minn_dist_ori_to_recon, _ = torch.min(selected_minn_dist_ori_to_recon, dim=1)
             ori_to_recon = torch.sqrt(selected_minn_dist_ori_to_recon).mean(dim=-1).mean()
-            print(f"ori_to_recon, uni L1: {float(ori_to_recon.item())}")
+            # print(f"ori_to_recon, uni L1: {float(ori_to_recon.item())}")
             self.ori_to_recon = ori_to_recon
 
             if k < cur_kanchor:
@@ -2396,7 +2291,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
                 slot_orbits = batched_index_select(values=topk_anchor_idxes, indices=slot_orbits.unsqueeze(-1),
                                                    dim=2).squeeze(-1)
             # register slot_orbits...
-            print("slot_orbits", slot_orbits) # register slot_orbits...
+            # print("slot_orbits", slot_orbits) # register slot_orbits...
 
             selected_anchors = batched_index_select(values=cur_anchors, indices=slot_orbits, dim=0)
 
@@ -2617,33 +2512,6 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
 
             np.save(self.log_fn + f"_n_stage_{self.stage}_iter_{cur_iter}.npy", out_feats)
 
-            # if cur_iter == 0:
-            # tmp_R = torch.matmul(safe_transpose(selected_glb_R.detach(), -1, -2).unsqueeze(1), gt_pose[:, :, :3, :3])
-            # tmp_T = torch.matmul(safe_transpose(selected_glb_R.detach(), -1, -2).unsqueeze(1),
-            #                      (gt_pose[:, :, :3, 3] - selected_glb_T.detach().unsqueeze(1)).unsqueeze(-1)).squeeze(-1)
-            # # Get GT Pose for each point
-            # gt_pose = torch.cat([tmp_R, tmp_T.unsqueeze(-1)], dim=-1)
-            # # Get GT Pose for
-            # gt_pose = torch.cat([gt_pose, torch.zeros((tmp_R.size(0), tmp_R.size(1), 1, 4), dtype=torch.float32).cuda()],
-            #                     dim=-2)
-
-            # out_feats['inv_feats'] = invariant_feats_npy
-            # np.save(self.log_fn + f"_n_iter_{cur_iter}_with_feats.npy", out_feats)
-
-            # print("selected_pred_R", selected_pred_R.size())
-            # we just use zero translations for the predicted pose? (dummy translations for pose)
-
-            ''' If use pose for iteration '''
-            # selected_pred_R = torch.matmul(safe_transpose(selected_glb_R.unsqueeze(1), -1, -2), selected_pred_R)
-            # pred_pose = torch.cat([selected_pred_R, torch.zeros((bz, npoints, 3, 1), dtype=torch.float32).cuda()],
-            #                       dim=-1)
-            # pred_pose = torch.cat([pred_pose, torch.zeros((bz, npoints, 1, 4), dtype=torch.float32).cuda()], dim=-2)
-            ''' If use pose for iteration '''
-
-            ''' If not to use pose for iteration '''
-            # pred_pose = pose
-            ''' If not to use pose for iteration '''
-
             self.pred_R = selected_pred_R_saved
             self.pred_T = selected_pred_T_saved
             self.defined_axises = defined_axises.clone()
@@ -2658,33 +2526,6 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
             out_feats['pv_points'] = pv_points.detach().cpu().numpy()
 
             self.out_feats = out_feats
-
-            # ori pc;
-            # selected_glb_anchor: bz x n_s x 3 x 3
-            # selected_glb_anchor = batched_index_select(self.anchors, indices=slot_orbits.long(), dim=0)[:, 0]
-            # # ori_pts: bz x 3 x N --> bz x 3 x N
-            # inv_trans_ori_pts = torch.matmul(safe_transpose(selected_glb_anchor, -1, -2), ori_pts)
-
-            ''' Get inv-sel-mode-new '''
-            # if self.sel_mode is not None and self.slot_single_mode:
-            #     # selected_glb_anchor: bz x n_s x 3 x 3
-            #     selected_glb_anchor = batched_index_select(self.anchors, indices=slot_orbits.long(), dim=0)[:, 0]
-            #     inv_selected_glb_anchor = safe_transpose(selected_glb_anchor, -1, -2)
-            #     dot_product_inv_glb_anchor_anchors = torch.matmul(inv_selected_glb_anchor.unsqueeze(1), self.anchors.unsqueeze(0))
-            #     # traces: bz x na
-            #     traces = dot_product_inv_glb_anchor_anchors[..., 0, 0] + dot_product_inv_glb_anchor_anchors[..., 1, 1] + dot_product_inv_glb_anchor_anchors[..., 2, 2]
-            #     inv_slot_orbits = torch.argmax(traces, dim=-1)
-            #     ##### self.sel_mode_new: Get sel_mode_new from inv_slot_orbits
-            #     #### get inv lsot orbits ####
-            #     self.sel_mode_new = inv_slot_orbits
-
-            # if cur_iter == 0:
-            #     # pred_glb_pose: bz x 3 x 4
-            #     # pred_glb_pose = torch.cat([selected_glb_R, selected_glb_T.unsqueeze(-1)], dim=-1)
-            # else:
-            #     pred_glb_pose = None
-
-            # self.pred_glb_pose = pred_glb_pose
 
             tot_loss = tot_recon_loss  # + (pts_ov_max_percent_loss) * 4.0 # encourage entropy
 
@@ -2705,7 +2546,7 @@ class ClsSO3ConvModel(nn.Module):  # SO(3) equi-conv-network #
         # traces: bz x npoints
         traces = get_trace(rel_mtx)
         traces = (traces - 1) / 2.
-        print("Similartiy with gt_rot", torch.mean(traces).item())
+        # print("Similartiy with gt_rot", torch.mean(traces).item())
         return torch.mean(traces).item()
 
     def forward(self, x, pose, ori_pc=None, rlabel=None, nn_inter=2, pose_segs=None, canon_pc=None, normals=None, canon_normals=None):

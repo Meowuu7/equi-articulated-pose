@@ -18,7 +18,7 @@ motion_*/
 # data folder
 data/*
 
-# loss log file
+# text file for logging
 *.txt
 
 # Distribution / packaging
