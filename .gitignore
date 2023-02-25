@@ -9,6 +9,12 @@ __pycache__/
 # C extensions
 *.so
 
+# predicted inof folder #
+predicted_info/
+
+# folders for saving intermediate features #
+motion_*/
+
 # data folder
 data/*
 

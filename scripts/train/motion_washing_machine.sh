@@ -36,6 +36,7 @@ CUDA_VISIBLE_DEVICES=${cuda_ids} TORCH_DISTRIBUTED_DEBUG=INFO python -m torch.di
 # ckpts: /share/xueyi/ckpt/playground/model_20230224_17:25:46/ckpt/playground_net_Iter200.pth
 # ckpts: /share/xueyi/ckpt/playground/model_20230224_17:25:46/ckpt/playground_net_Iter400.pth
 # ckpts: /share/xueyi/ckpt/playground/model_20230224_17:25:46/ckpt/playground_net_Iter600.pth
+# ckpts: /share/xueyi/ckpt/playground/model_20230224_17:25:46/ckpt/playground_net_Iter5200.pth
 
 ## for eval ##
 #  --run-mode=eval --pre-compute-delta=1 --sel-mode-trans=-1   --resume-path=/share/xueyi/ckpt/playground/model_20220515_12:17:16/ckpt/playground_net_Iter400.pth  --mtx-based-axis-regression=False

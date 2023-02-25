@@ -6,7 +6,8 @@ export pre_compute_delta=2
 export cuda_ids=2,3,5,6,7
 export num_gpus=5
 export resume_path_glb="/share/xueyi/ckpt/playground/model_20220327_07:06:40/ckpt/playground_net_Iter3400.pth"
-export resume_path="/share/xueyi/ckpt/playground/model_20230224_17:25:46/ckpt/playground_net_Iter600.pth"
+export resume_path="/share/xueyi/ckpt/playground/model_20230224_17:25:46/ckpt/playground_net_Iter6600.pth"
+
 
 export input_num=512
 export input_num=380
