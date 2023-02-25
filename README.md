@@ -4,7 +4,7 @@ This is the official code repo of the paper:
 
 [Self-Supervised Category-Level Articulated Object Pose Estimation with Part-Level SE(3) Equivariance](https://equi-articulated-pose.github.io/), *Xueyi Liu*, *Ji Zhang*, *Ruizhen Hu*, *Haibin Huang*, *He Wang*, *Li Yi*, ICLR 2023.
 
-![overall_pipeline](./assets/overall-pipeline-z.pdf)
+![overall_pipeline](./assets/Picture1.png)
 
 ## Links
 
