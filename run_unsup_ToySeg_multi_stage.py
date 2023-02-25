@@ -8,20 +8,8 @@ import torch
 if __name__ == '__main__':
     opt.model.flag = 'regular'
 
-    if opt.equi_settings.use_equi == 27:
-        opt.model.model = "unsup_seg_so3_pose_conv_pn_27_multi_stage"
-    elif opt.equi_settings.use_equi == 31:
-        opt.model.model = "unsup_seg_so3_pose_conv_pn_31_multi_stage"
-    elif opt.equi_settings.use_equi == 32:
-        opt.model.model = "unsup_seg_so3_pose_conv_pn_32_multi_stage"
-    elif opt.equi_settings.use_equi == 33:
-        opt.model.model = "unsup_seg_so3_pose_conv_pn_33_multi_stage"
-    elif opt.equi_settings.use_equi == 34:
-        opt.model.model = "unsup_seg_so3_pose_conv_pn_34_multi_stage"
-    elif opt.equi_settings.use_equi == 35:
+    if opt.equi_settings.use_equi == 35:
         opt.model.model = "unsup_seg_so3_pose_conv_pn_35_multi_stage"
-    elif opt.equi_settings.use_equi == 36:
-        opt.model.model = "unsup_seg_so3_pose_conv_pn_36_multi_stage"
     elif opt.equi_settings.use_equi == 38:
         opt.model.model = "unsup_seg_so3_pose_conv_pn_38_multi_stage"
     elif opt.equi_settings.use_equi == 39:
