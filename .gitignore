@@ -21,6 +21,8 @@ data/*
 # text file for logging
 *.txt
 
+
+
 # Distribution / packaging
 .Python
 build/
@@ -148,3 +150,7 @@ datasets/indoor3d_sem_seg_hdf5_data
 
 ckpts
 data
+
+./scripts/train/laptop_real.sh
+
+./scripts/train/laptop_syn.sh

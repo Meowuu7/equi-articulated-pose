@@ -264,8 +264,8 @@ class ClsSO3ConvModel(nn.Module):
             )
 
         self.glb_recon_npoints = 512
-        self.glb_recon_npoints = 1024 # partial motion laptop
-        self.glb_recon_npoints = 512 # complete oven, washing machine
+        self.glb_recon_npoints = 1024 # partial motion laptop, motion laptop
+        self.glb_recon_npoints = 512 # complete oven, washing machine, safe, real laptop
         # self.glb_recon_npoints = self.npoints
 
         ''' Construct reconstruction branch for the whole shape '''

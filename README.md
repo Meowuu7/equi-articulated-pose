@@ -10,6 +10,7 @@ This is the official code repo of the paper:
 
 - [Project Page](https://equi-articulated-pose.github.io/)
 - [Openreview Page](https://openreview.net/forum?id=20GtJ6hIaPA)
+- [arXiv Page](https://arxiv.org/abs/2302.14268)
 
 ## TODOs
 
@@ -49,19 +50,9 @@ bash scripts/val/${CATEGORY_NAME}.sh
 
 ## License
 
-(Add licenses here)
-
 Our code and data are released under MIT License (see LICENSE file for details).
 
 
 ## Reference
 
-(Add references here like follows)
-
-EPN,equipose
-
 Part of the code is taken from [EPN](https://github.com/SimingYan/HPNet), [equi-pose](https://github.com/lingxiaoli94/SPFN).
-
-[1] xxx
-
-[2] xxx

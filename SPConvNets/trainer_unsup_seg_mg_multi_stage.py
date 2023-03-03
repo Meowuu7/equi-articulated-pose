@@ -738,8 +738,8 @@ class Trainer(vgtk.Trainer):
         weighted_step = 1.0 # if (self.use_equi == 23 and self.gt_oracle_seg == 1) else weighted_step
 
         # if local rank is zero, print weighted_step #### if local zeros
-        if self.local_rank == 0:
-            print(f"weighted_step current epoch: {weighted_step}")
+        # if self.local_rank == 0:
+        #     print(f"weighted_step current epoch: {weighted_step}")
         self.model.module.slot_recon_factor = self.slot_recon_factor * weighted_step
 
         if self.lr_adjust == 1:
