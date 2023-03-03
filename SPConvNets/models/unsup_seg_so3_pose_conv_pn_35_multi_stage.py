@@ -67,8 +67,6 @@ class ClsSO3ConvModel(nn.Module):
         self.slot_iters = params['general']['slot_iters']
         self.rot_factor = params['general']['rot_factor']
         self.translation = params['general']['translation']
-        self.gt_oracle_seg = params['general']['gt_oracle_seg']
-        self.gt_oracle_trans = params['general']['gt_trans']
         self.feat_pooling = params['general']['feat_pooling']
         self.cent_trans = params['general']['cent_trans']
         self.soft_attn = params['general']['soft_attn']
@@ -1820,8 +1818,6 @@ def build_model(opt,
         'slot_iters': opt.equi_settings.slot_iters,
         'rot_factor': opt.equi_settings.rot_factor,
         'translation': opt.equi_settings.translation,
-        'gt_oracle_seg': opt.equi_settings.gt_oracle_seg,
-        'gt_trans': opt.equi_settings.gt_oracle_trans,
         'feat_pooling': opt.equi_settings.feat_pooling,
         'cent_trans': opt.equi_settings.cent_trans,
         'soft_attn': opt.equi_settings.soft_attn,

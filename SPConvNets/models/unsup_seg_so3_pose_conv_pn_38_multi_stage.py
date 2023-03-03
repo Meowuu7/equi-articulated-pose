@@ -74,8 +74,6 @@ class ClsSO3ConvModel(nn.Module):
         self.slot_iters = params['general']['slot_iters']
         self.rot_factor = params['general']['rot_factor']
         self.translation = params['general']['translation']
-        self.gt_oracle_seg = params['general']['gt_oracle_seg']
-        self.gt_oracle_trans = params['general']['gt_trans']
         self.feat_pooling = params['general']['feat_pooling']
         self.cent_trans = params['general']['cent_trans']
         self.soft_attn = params['general']['soft_attn']
@@ -127,30 +125,27 @@ class ClsSO3ConvModel(nn.Module):
         else:
             self.kpconv_anchors = torch.from_numpy(L.get_anchors(self.kpconv_kanchor)).cuda()
 
-        ''' Use slot attention for points grouping '''
-        if self.gt_oracle_seg == 0 or self.gt_oracle_seg == 1:  # not a GT seg...
-            ''' Construct slot-attention module '''
-            #### ??
-            orbit_attn_three_in_dim = self.inv_out_dim + 3
-            # orbit_attn_three_in_dim = self.inv_out_dim + 5
-            # orbit_attn_three_in_dim = 3
-            # attention in feature dim...
-            self.attn_in_dim = (self.inv_out_dim + self.kanchor) if self.orbit_attn == 1 else (
-                self.kanchor) if self.orbit_attn == 2 else (orbit_attn_three_in_dim) if self.orbit_attn == 3 else (
-                self.inv_out_dim)
-            # inv_pooling_method = 'max' if self.recon_prior not in [0, 2] else 'attention'
-            inv_pooling_method = 'attention'
+        ''' Construct slot-attention module '''
+        orbit_attn_three_in_dim = self.inv_out_dim + 3
+        # orbit_attn_three_in_dim = self.inv_out_dim + 5
+        # orbit_attn_three_in_dim = 3
+        # attention in feature dim...
+        self.attn_in_dim = (self.inv_out_dim + self.kanchor) if self.orbit_attn == 1 else (
+            self.kanchor) if self.orbit_attn == 2 else (orbit_attn_three_in_dim) if self.orbit_attn == 3 else (
+            self.inv_out_dim)
+        # inv_pooling_method = 'max' if self.recon_prior not in [0, 2] else 'attention'
+        inv_pooling_method = 'attention'
 
-            self.inv_pooling_method = inv_pooling_method
-            self.sel_mode = None if self.sel_mode == -1 else self.sel_mode
-            self.inv_pooling_method = self.inv_pooling_method if self.sel_mode is None else 'sel_mode'
-            self.ppint_outblk = Mso3.InvPPOutBlockOurs(params['outblock'], norm=1, pooling_method=inv_pooling_method,
-                                                       sel_mode=self.sel_mode)
-            # whether to use slot attention module
-            # slot attention;
-            self.slot_attention = SlotAttention(num_slots=params['outblock']['k'],
-                                                dim=self.attn_in_dim, hidden_dim=self.inv_out_dim,
-                                                iters=self.slot_iters)
+        self.inv_pooling_method = inv_pooling_method
+        self.sel_mode = None if self.sel_mode == -1 else self.sel_mode
+        self.inv_pooling_method = self.inv_pooling_method if self.sel_mode is None else 'sel_mode'
+        self.ppint_outblk = Mso3.InvPPOutBlockOurs(params['outblock'], norm=1, pooling_method=inv_pooling_method,
+                                                    sel_mode=self.sel_mode)
+        # whether to use slot attention module
+        # slot attention;
+        self.slot_attention = SlotAttention(num_slots=params['outblock']['k'],
+                                            dim=self.attn_in_dim, hidden_dim=self.inv_out_dim,
+                                            iters=self.slot_iters)
 
         ''' Construct whole shape output block '''
         use_abs_pos = False
@@ -629,9 +624,7 @@ class ClsSO3ConvModel(nn.Module):
             # slot attention # Get attention values from each point to each slot
             rep_slots, attn_ori = self.slot_attention(safe_transpose(ppinv_out, -1, -2))
             ''' Point grouping '''
-
-            if self.gt_oracle_seg == 1:
-                attn_ori = safe_transpose(rlabel, -1, -2)
+            
 
             # hard_labels: bz x n2; hard_labels...
             hard_labels = torch.argmax(attn_ori, dim=1)
@@ -1102,33 +1095,10 @@ class ClsSO3ConvModel(nn.Module):
                         if not self.pred_axis:  # whether to predict axis
                             defined_axis = torch.tensor([0.0, 1.0, 0.0], dtype=torch.float32).cuda().unsqueeze(0)
                         else:
-                            ''' An axis per slot '''
-                            # defined_axis: 1 x na x 3;
-                            # defined_axis = slot_axis[i_s][i_bz].unsqueeze(0) # the residual axis for each anchor
-                            # defined_axis = safe_transpose(defined_axis, -1, -2)
-                            ''' An axis per slot '''
-
-                            ''' The same axis for all slots --- version 1 for axis usage... '''
-                            # # # slot_axis: bz x ns x na x 3 # defined axis...
-                            # defined_axis = torch.mean(slot_axis, dim=1)[i_bz] # use the mean of predicted axis...
-                            # defined_axis = defined_axis / torch.clamp(torch.norm(defined_axis, dim=-1, keepdim=True, p=2), min=1e-8)
-                            ''' The same axis for all slots --- version 1 for axis usage...  '''
-
-                            ''' The same axis for all slots --- version 2 for axis usage...  '''
-                            # slot_axis: bz x ns x na x 3 # defined axis...
-                            # defined_axis = slot_axis[i_bz, 0]  # use the mean of predicted axis...
-                            ''' The same axis for all slots --- version 2 for axis usage...  '''
-
+                            
                             ''' The same axis for all slots --- version 3 for axis usage... '''
-                            # slot_axis: bz x ns x na x 3 # defined axis...
-                            # defined_axis = slot_axis[i_bz, 1]  # Use the predicted axis of the first slot
-                            defined_axis = slot_axis[i_bz, 0]  # Use the predicted axis of the first slot
-                            ### use minn_seg_label...
-                            # defined_axis = slot_axis[i_bz, cur_bz_cur_minn_seg_label]
+                            defined_axis = slot_axis[i_bz, 0]
                             ''' The same axis for all slots --- version 3 for axis usage...  '''
-
-                            # defined_axis =
-                            # torch.matmul(cur_anchors.unsqueeze(0), defined_axis.unsqueeze(-1)).squeeze(-1)
 
                         # From current slot's rotation value to its rotation angle
                         ''' Previous -- fix the maximum angle to 0.5 * pi '''
@@ -2314,8 +2284,6 @@ def build_model(opt,
         'slot_iters': opt.equi_settings.slot_iters,
         'rot_factor': opt.equi_settings.rot_factor,
         'translation': opt.equi_settings.translation,
-        'gt_oracle_seg': opt.equi_settings.gt_oracle_seg,
-        'gt_trans': opt.equi_settings.gt_oracle_trans,
         'feat_pooling': opt.equi_settings.feat_pooling,
         'cent_trans': opt.equi_settings.cent_trans,
         'soft_attn': opt.equi_settings.soft_attn,

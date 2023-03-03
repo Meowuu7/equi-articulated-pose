@@ -140,12 +140,6 @@ loss_args.add_argument('--rot-anchors', type=int, default=0,
                        help='type of loss function')
 loss_args.add_argument('--translation', type=int, default=0,
                        help='type of loss function')
-loss_args.add_argument('--gt-oracle-seg', type=int, default=0,
-                       help='type of loss function')
-loss_args.add_argument('--no-articulation', type=int, default=0,
-                       help='type of loss function')
-loss_args.add_argument('--gt-oracle-trans', type=int, default=0,
-                       help='type of loss function')
 loss_args.add_argument('--feat-pooling', type=str, default='mean',
                        help='type of loss function')
 loss_args.add_argument('--cent-trans', type=int, default=0,

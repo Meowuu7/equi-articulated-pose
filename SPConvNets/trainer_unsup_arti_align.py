@@ -1,8 +1,4 @@
 from importlib import import_module
-# from SPConvNets import Dataloader_ModelNet40
-# from SPConvNets.datasets.ToySegDataset import Dataloader_ToySeg
-# from SPConvNets.datasets.MotionSegDataset import PartSegmentationMetaInfoDataset
-# from SPConvNets.datasets.shapenetpart_dataset import ShapeNetPartDataset
 from SPConvNets.datasets.MotionDataset import MotionDataset
 from SPConvNets.datasets.MotionDataset2 import MotionDataset as MotionDataset2
 from SPConvNets.datasets.MotionSAPIENDataset import MotionDataset as MotionSAPIENDataset
@@ -12,7 +8,6 @@ try:
     from SPConvNets.datasets.MotionDatasetPartial import MotionDataset as MotionDatasetPartial
 except:
     pass
-# from SPConvNets.datasets.MotionDatasetPartial import MotionDataset as MotionDatasetPartial
 try:
     from SPConvNets.datasets.MotionHOIDatasetPartial import MotionDataset as MotionHOIDatasetPartial
 except:
@@ -53,16 +48,6 @@ from SPConvNets.ransac import *
 
 class Trainer(vgtk.Trainer):
     def __init__(self, opt):
-        ''' dummy '''
-        ''' Set device '''
-        # if torch.cuda.device_count() > 1:
-        #     torch.distributed.init_process_group(backend='nccl')
-        #     tmpp_local_rnk = int(os.environ['LOCAL_RANK'])
-        #     print("os_environed:", tmpp_local_rnk)
-        #     self.local_rank = tmpp_local_rnk
-        #     torch.cuda.set_device(self.local_rank)
-        # else:
-        #     self.local_rank = 0
 
         torch.distributed.init_process_group(backend='nccl')
         tmpp_local_rnk = int(os.environ['LOCAL_RANK'])
@@ -79,9 +64,6 @@ class Trainer(vgtk.Trainer):
         self.pre_compute_delta = opt.equi_settings.pre_compute_delta
         self.num_slots = opt.nmasks
         self.use_equi = opt.equi_settings.use_equi
-        # torch.cuda.set_device(opt.parallel.local_rank)
-        # self.local_rank = opt.parallel.local_rank
-        self.gt_oracle_seg = opt.equi_settings.gt_oracle_seg
         self.slot_recon_factor = opt.equi_settings.slot_recon_factor
         self.est_normals = opt.equi_settings.est_normals
         self.glb_resume_path = opt.resume_path_glb
@@ -193,96 +175,12 @@ class Trainer(vgtk.Trainer):
 
     ''' Setup datsets '''
     def _setup_datasets(self):
-        # if self.opt.mode == 'train':
-        #     dataset = Dataloader_ToySeg(self.opt, len=self.opt.train_len)
-        #     self.dataset = torch.utils.data.DataLoader(dataset,
-        #                                                 batch_size=self.opt.batch_size,
-        #                                                 shuffle=True,
-        #                                                 num_workers=self.opt.num_thread)
-        #     self.dataset_iter = iter(self.dataset)
-        #
-        # #
-        # dataset_test = Dataloader_ToySeg(self.opt, len=self.opt.test_len, mode='testR')
-        # self.dataset_test = torch.utils.data.DataLoader(dataset_test,
-        #                                                 batch_size=self.opt.batch_size,
-        #                                                 shuffle=False,
-        #                                                 num_workers=self.opt.num_thread)
-
+        
         npoints = 512
         npoints = self.opt.model.input_num
         global_rot = self.opt.equi_settings.global_rot
-        # npoints = 256
-        # npoints = 1024
-        # if self.opt.mode == 'train':
-        #
-        #     dataset = PartSegmentationMetaInfoDataset(
-        #         root="/home/xueyi/inst-segmentation/data/part-segmentation/data/motion_part_split_meta_info",
-        #         npoints=npoints, split='train', nmask=10,
-        #         shape_types=["03642806", "03636649", "02691156", "03001627", "02773838", "02954340", "03467517",
-        #                      "03790512",
-        #                      "04099429", "04225987", "03624134", "02958343", "03797390", "03948459", "03261776",
-        #                      "04379243"],
-        #         real_test=False, part_net_seg=False, partnet_split=False, args=self.opt)
-        #     self.dataset = torch.utils.data.DataLoader(dataset,
-        #                                                 batch_size=self.opt.batch_size,
-        #                                                 shuffle=True,
-        #                                                 num_workers=self.opt.num_thread)
-        #     self.dataset_iter = iter(self.dataset)
-        #
-        # dataset_test = PartSegmentationMetaInfoDataset(
-        #         root="/home/xueyi/inst-segmentation/data/part-segmentation/data/motion_part_split_meta_info",
-        #         npoints=npoints, split='val', nmask=10,
-        #         shape_types=["03642806", "03636649", "02691156", "03001627", "02773838", "02954340", "03467517",
-        #                      "03790512",
-        #                      "04099429", "04225987", "03624134", "02958343", "03797390", "03948459", "03261776",
-        #                      "04379243"],
-        #         real_test=False, part_net_seg=False, partnet_split=False, args=self.opt)
-        # self.dataset_test = torch.utils.data.DataLoader(dataset_test,
-        #                                                 batch_size=self.opt.batch_size,
-        #                                                 shuffle=False,
-        #                                                 num_workers=self.opt.num_thread)
 
-        if self.dataset_type == DATASET_PARTNET:
-            ## If using partnet dataset ##
-
-            ''' Shapes from motion segmentation dataset '''
-            if self.opt.mode == 'train':
-
-                dataset = PartSegmentationMetaInfoDataset(
-                    root="/home/xueyi/inst-segmentation/data/part-segmentation/data/motion_part_split_meta_info",
-                    npoints=npoints, split='train', nmask=10,
-                    # shape_types=["Sitting Furniture"],
-                    shape_types=["Laptop"],
-                    real_test=False, part_net_seg=True, partnet_split=False, args=self.opt)
-                train_sampler = torch.utils.data.distributed.DistributedSampler(
-                    dataset)
-                self.dataset = torch.utils.data.DataLoader(dataset,
-                                                            batch_size=self.opt.batch_size,
-                                                            sampler=train_sampler,
-                                                            num_workers=self.opt.num_thread)
-                self.dataset_iter = iter(self.dataset)
-
-            dataset_test = PartSegmentationMetaInfoDataset(
-                    root="/home/xueyi/inst-segmentation/data/part-segmentation/data/motion_part_split_meta_info",
-                    npoints=npoints, split='val', nmask=10,
-                    # shape_types=["Sitting Furniture"],
-                    shape_types=["Laptop"],
-                    real_test=False, part_net_seg=True, partnet_split=False, args=self.opt)
-            test_sampler = torch.utils.data.distributed.DistributedSampler(
-                dataset_test)
-            # Test dataloader
-            self.dataset_test = torch.utils.data.DataLoader(dataset_test,
-                                                            batch_size=self.opt.batch_size,
-                                                            sampler=test_sampler,
-                                                            num_workers=self.opt.num_thread)
-
-        elif self.dataset_type == DATASET_MOTION or self.dataset_type == DATASET_MOTION_PARTIAL:
-            ## If using motion dataset ##
-            shape_type = 'laptop'
-            shape_type = 'eyeglasses'
-            shape_type = 'oven'
-            # shape_type = 'bucket'
-            # shape_type = 'washing_machine'
+        if self.dataset_type == DATASET_MOTION or self.dataset_type == DATASET_MOTION_PARTIAL:
             shape_type = self.opt_shape_type
             self.shape_type = shape_type
 
@@ -333,12 +231,6 @@ class Trainer(vgtk.Trainer):
                                                                 shuffle=False,
                                                                 num_workers=self.opt.num_thread)
         elif self.dataset_type == DATASET_MOTION2:
-            ## If using motion dataset ##
-            shape_type = 'laptop'
-            shape_type = 'eyeglasses'
-            shape_type = 'oven'
-            # shape_type = 'bucket'
-            # shape_type = 'washing_machine'
             shape_type = self.opt_shape_type
             self.shape_type = shape_type
 
@@ -382,12 +274,6 @@ class Trainer(vgtk.Trainer):
                                                                 shuffle=True,
                                                                 num_workers=self.opt.num_thread)
         elif self.dataset_type == DATASET_HOI4D or self.dataset_type == DATASET_HOI4D_PARTIAL:
-            ## If using motion dataset ##
-            # shape_type = 'laptop'
-            # shape_type = 'eyeglasses'
-            # shape_type = 'oven'
-            # shape_type = 'bucket'
-            # shape_type = 'washing_machine'
             shape_type = self.opt_shape_type
             self.shape_type = shape_type
 
@@ -439,32 +325,6 @@ class Trainer(vgtk.Trainer):
         else:
             raise ValueError(f"Unrecognized dataset type: {self.dataset_type}.")
 
-        ''' Shapes from ShapeNetPart dataset '''
-        # npoints = 1024
-        # # npoints = 2048
-        # # npoints = 1500
-        # if self.opt.mode == 'train':
-        #     dataset = ShapeNetPartDataset(
-        #         root="/home/xueyi/EPN_PointCloud/data",
-        #         npoints=npoints, split='train', nmask=10,
-        #         shape_types=["03001627"],
-        #         real_test=False, part_net_seg=True, partnet_split=False, args=self.opt)
-        #     self.dataset = torch.utils.data.DataLoader(dataset,
-        #                                                 batch_size=self.opt.batch_size,
-        #                                                 shuffle=True,
-        #                                                 num_workers=self.opt.num_thread)
-        #     self.dataset_iter = iter(self.dataset)
-        #
-        # dataset_test = ShapeNetPartDataset(
-        #         root="/home/xueyi/EPN_PointCloud/data",
-        #         npoints=npoints, split='val', nmask=10,
-        #         shape_types=["03001627"],
-        #         real_test=False, part_net_seg=True, partnet_split=False, args=self.opt)
-        # self.dataset_test = torch.utils.data.DataLoader(dataset_test,
-        #                                                 batch_size=self.opt.batch_size,
-        #                                                 shuffle=False,
-        #                                                 num_workers=self.opt.num_thread)
-
     ''' Setup model '''
     def _setup_model(self):
         if self.opt.mode == 'train': #
@@ -483,13 +343,6 @@ class Trainer(vgtk.Trainer):
             self.glb_stage_model.stage = 0 # set stage to 0
             self.opt.equi_settings.kpconv_kanchor = self.model.kpconv_kanchor
 
-        # if self.dataset_type == DATASET_MOTION and self.shape_type != DATASET_DRAWER:
-        #     self.ref_shape_slot = self.dataset.dataset.get_shape_by_idx(0)
-        #     print(f"Got reference shape: {self.ref_shape_slot.size()}")
-        #     self.model.ref_shape_slot = self.ref_shape_slot.cuda()
-        #
-        #     self.model.ref_whole_shape = self.dataset.dataset.get_whole_shape_by_idx(0).cuda()
-        # self.
 
     def train_iter(self):
         for i in range(self.opt.num_iterations):
@@ -567,27 +420,6 @@ class Trainer(vgtk.Trainer):
                 # load parameter weigths for the glb model
                 glb_state_dicts = torch.load(self.glb_resume_path, map_location="cpu")
                 self.safe_load_ckpt(self.glb_stage_model, glb_state_dicts)
-            # glb_resume_path = s
-
-        # # if self.stage == 1
-        # if self.stage == 1 and self.run_mode == 'train':
-        #     # self.model.glb_backbone.load_state_dict(state_dicts['glb_backbone'])
-        #
-        #     ori_dict = state_dicts
-        #     part_dict = dict()
-        #     model_dict = self.model.state_dict()
-        #     tot_params_n = 0
-        #     for k in ori_dict:
-        #         if "glb_backbone" in k:
-        #             v = ori_dict[k]
-        #             part_dict[k] = v
-        #             tot_params_n += 1
-        #     model_dict.update(part_dict)
-        #     self.model.load_state_dict(model_dict)
-        #     self.logger.log('Setup', f"Resume glb-backbone finished!! Total number of parameters: {tot_params_n}.")
-        #
-        # else:
-        #     self.model.load_state_dict(state_dicts)
 
         self.logger.log('Setup', f'Resume finished! Great!')
 
@@ -642,15 +474,7 @@ class Trainer(vgtk.Trainer):
         torch.save(params, save_path)
 
         self.logger.log('Training', f'Checkpoint saved to: {save_path}!')
-
-    # def save_predicted_by_step(self, out_feats):
-    #     save_root_path = os.path.join(self.root_dir, "out_step")
-    #     if not os.path.exists(save_root_path):
-    #         os.mkdir(save_root_path)
-    #     save_path = os.path.join(save_root_path, f"out_feats_Iter_{self.n_step}.npy")
-    #     np.save(save_path, out_feats)
-    #     print(f"Out features in step {self.n_step} saved to path {save_path}!")
-
+        
     # For epoch-based training
     def epoch_step(self):
         for it, data in tqdm(enumerate(self.dataset)):
@@ -712,34 +536,8 @@ class Trainer(vgtk.Trainer):
         else:
             self.model.module.annealing_k = 1
 
-        # if self.n_step > 0:
-        #     if os.path.exists("axis_prior_0.npy"):
-        #         axis_prior_slot_pairs = torch.from_numpy(np.load("axis_prior_0.npy", allow_pickle=True)).cuda()
-        #         self.model.module.axis_prior_slot_pairs.data = axis_prior_slot_pairs
-        #     if os.path.exists("slot_pair_mult_R_queue_0.npy"):
-        #         slot_pair_mult_R_queue = torch.from_numpy(np.load("slot_pair_mult_R_queue_0.npy", allow_pickle=True)).cuda()
-        #         self.model.module.slot_pair_mult_R_queue.data = slot_pair_mult_R_queue
+        weighted_step = 1.0
 
-        # weighted_step = math.exp(-1. * (self.n_step) / self.n_dec_steps)
-        # weighted_step = math.exp(-1. * (self.n_step) / 200)
-        # # weighted_step = math.exp(-1. * (self.n_step) / 400) # if using larger n_dec_step
-        # # weighted_step = math.exp(-1. * (self.n_step) / 800) # if using larger n_dec_step
-        # # weighted_step = math.exp(-1. * (self.n_step) / 100) # if using a smaller n_dec_step
-        # # weighted_step = math.exp(-1. * (self.n_step) / 50) # if using a smaller n_dec_step
-        # # weighted_step = math.exp((self.n_step) / self.n_dec_steps)
-        #
-        # weighted_step = 1. - weighted_step
-        # # weighted_step = 1.
-        # # weighted_step = self.n_step / 800
-        # # weighted_step = weighted_step - 1.
-        # weighted_step = max(0.0, min(1.0, weighted_step))
-        #
-        # weighted_step = 1.0 if (self.use_equi == 23 and self.gt_oracle_seg == 1) else weighted_step
-        weighted_step = 1.0 # if (self.use_equi == 23 and self.gt_oracle_seg == 1) else weighted_step
-
-        # if local rank is zero, print weighted_step #### if local zeros
-        # if self.local_rank == 0:
-        #     print(f"weighted_step current epoch: {weighted_step}")
         self.model.module.slot_recon_factor = self.slot_recon_factor * weighted_step
 
         if self.lr_adjust == 1:
@@ -786,20 +584,6 @@ class Trainer(vgtk.Trainer):
         be_af_dists = torch.sum((oorr_pc.unsqueeze(-1) - in_tensors.detach().cpu().unsqueeze(-2)) ** 2, dim=1)
         minn_dist, minn_idx = torch.min(be_af_dists, dim=-1)
 
-        # import ipdb; ipdb.set_trace()
-        # print("input shapes = ", in_tensors.size(), in_label.size(), in_pose.size())
-
-        # bz, N = in_tensors.size(0), in_tensors.size(2)
-
-        ###################### ----------- debug only ---------------------
-        # in_tensorsR = data['pcR'].to(self.opt.device)
-        # import ipdb; ipdb.set_trace()
-        ##################### --------------------------------------------
-
-        # feed into the model: in_tensors, in_pos, and no rotation value
-        # pred, feat =
-        # loss, pred = self.model(in_tensors, in_pose, None)
-
         sv_dict = {'part_pv_points': part_pv_point.detach().cpu().numpy(),
                    'part_axis': part_axis.detach().cpu().numpy(),
                    'part_angles': part_angles.detach().cpu().numpy(), # part angles...,
@@ -820,14 +604,6 @@ class Trainer(vgtk.Trainer):
             sv_dict['glb_T'] = glb_T.detach().cpu().numpy()
 
             sv_dict['in_tensors_af_glb'] = in_tensors.detach().cpu().numpy()
-
-            # glb_R: bz x 3 x 3
-            # glb_T: bz x 3
-            # in_tensors = torch.matmul(safe_transpose(glb_R, -1, -2), in_tensors - glb_T.unsqueeze(-1))
-            # in_pose: bz x N x 4 x 4
-            # in_tensors: bz x 3 x N
-            ###### Centralize in_tensors ######
-
 
             in_tensors = in_tensors - torch.mean(in_tensors, dim=-1, keepdim=True)
 
@@ -1111,7 +887,7 @@ class Trainer(vgtk.Trainer):
             self.model.train()
         self.metric.train()
 
-        weighted_step = 1.0 # if (self.use_equi == 23 and self.gt_oracle_seg == 1) else weighted_step
+        weighted_step = 1.0
 
         # if local rank is zero, print weighted_step
         if self.local_rank == 0:
@@ -1205,7 +981,7 @@ class Trainer(vgtk.Trainer):
             # self.model.train()
             self.model.eval()
         #### loss weight is not that important now ####
-        weighted_step = 1.0 # if (self.use_equi == 23 and self.gt_oracle_seg == 1) else weighted_step
+        weighted_step = 1.0
 
         # if local rank is zero, print weighted_step
         if self.local_rank == 0:
@@ -1405,11 +1181,7 @@ class Trainer(vgtk.Trainer):
         # self.model.module.queue_len = self.model.module.queue_tot_len
 
         if self.pre_compute_delta == 1:
-            # self.model.module.gt_oracle_seg = 1
-            # better evaluate it in a single card?
-            #
-            # set_dr = []
-            # set_dt = []
+
             shape_type_to_n_parts = {"eyeglasses": 3, "oven": 2, "washing_machine": 2, "laptop": 2, "drawer": 4, "safe": 2}
             n_parts = shape_type_to_n_parts[self.shape_type]
             set_dr = {}; set_dt = {}
@@ -1423,99 +1195,8 @@ class Trainer(vgtk.Trainer):
                 set_dt[i_p] = []
             with torch.no_grad():
                 for it, data in enumerate(self.dataset):
-                    #
-                    # in_tensors = data['pc'].cuda(non_blocking=True)
-                    # bdim = in_tensors.shape[0]
-                    # in_label = data['label'].cuda(non_blocking=True)  # .reshape(-1)
-                    # in_pose = data['pose'].cuda(non_blocking=True)  # if self.opt.debug_mode == 'knownatt' else None
-                    # in_pose_segs = data['pose_segs'].cuda(non_blocking=True)
-                    # ori_pc = data['ori_pc'].cuda(non_blocking=True)
-                    # canon_pc = data['canon_pc'].cuda(non_blocking=True)
-                    #
-                    # if self.est_normals == 1:
-                    #     cur_normals = data['cur_normals'].cuda(non_blocking=True)
-                    #     cur_canon_normals = data['cur_canon_normals'].cuda(non_blocking=True)
-                    # else:
-                    #     cur_normals = None
-                    #     cur_canon_normals = None
-                    #
-                    # # original point cloud
-                    # oorr_pc = data['oorr_pc']
-                    # # point labels
-                    # oorr_label = data['oorr_label']
-                    # be_af_dists = torch.sum((oorr_pc.unsqueeze(-1) - in_tensors.detach().cpu().unsqueeze(-2)) ** 2, dim=1)
-                    # minn_dist, minn_idx = torch.min(be_af_dists, dim=-1)
-                    #
-                    # # print("intensor_size:", in_tensors.size())
-                    #
-                    # data_idxes = data['idx'].detach().cpu().numpy().tolist()
-                    # # a complete or a
-                    # data_idxes = [str(ii) for ii in data_idxes]
-                    #
-                    # bz = in_tensors.size(0)
-                    # N = in_tensors.size(2)
-                    #
-                    # assert bz == 1
-                    #
-                    # # get one-hot label
-                    # label = torch.eye(self.opt.nmasks)[in_label].cuda()
-                    #
-                    # with torch.no_grad():
-                    #     glb_recon_loss = self.glb_stage_model(in_tensors, in_pose, ori_pc=ori_pc, rlabel=label,
-                    #                                           pose_segs=in_pose_segs, canon_pc=canon_pc,
-                    #                                           normals=cur_normals, canon_normals=cur_canon_normals)
-                    # in_tensors = self.glb_stage_model.module.inv_trans_ori_pts if self._use_multi_gpu else self.glb_stage_model.inv_trans_ori_pts
-                    # glb_R = self.glb_stage_model.module.glb_R if self._use_multi_gpu else self.glb_stage_model.glb_R
-                    # glb_T = self.glb_stage_model.module.glb_T if self._use_multi_gpu else self.glb_stage_model.glb_T
-                    #
-                    # # oorr_pc = torch.matmul(safe_transpose(glb_R, -1, -2), oorr_pc - glb_T.unsqueeze(-1))
-                    #
-                    # loss = self.model(in_tensors, in_pose, ori_pc=ori_pc, rlabel=label, pose_segs=in_pose_segs,
-                    #                   canon_pc=canon_pc,
-                    #                   normals=cur_normals, canon_normals=cur_canon_normals)
-                    #
-                    # # # get loss by forwarding data through the model
-                    # # loss = self.model(in_tensors, in_pose, ori_pc=ori_pc, rlabel=label, pose_segs=in_pose_segs,
-                    # #                   canon_pc=canon_pc)
-                    #
-                    # print(f"loss: {loss}")
-                    #
-                    # ''' NOTE: We use GT Seg!!! '''
-                    # # pred_R: bz x n_s x 3 x 3
-                    # # selected predicted rotations for each slot
-                    # pred_R = self.model.module.pred_R
-                    # # pred_T: bz x n_s x 3
-                    # # pred_T = self.model.module.ori_pred_T
-                    # # so what does ori_pred_T represent
-                    # # selected predicted translations for each slot
-                    # pred_T = self.model.module.pred_T
-                    # # pred_T = self.model.module.pred_T
-                    # n_s = pred_T.size(1)
-                    #
-                    # # Get predicted attention
-                    # # bz x n_s x N
-                    # pred_attn_ori = self.model.module.attn_saved if self.n_iters == 1 else self.model.module.attn_saved_1
-                    # # pred_labels: bz x N
-                    # pred_labels = torch.argmax(pred_attn_ori, dim=1).long()
-                    # # pred_hard_one_hot_labels: bz x N x n_s --> bz x n_s x N
-                    # # pred_hard_one_hot_labels = torch.eye(pred_attn_ori.size(1), dtype=torch.float32).cuda()[pred_labels]
-                    # # pred_hard_one_hot_labels = torch.transpose(pred_hard_one_hot_labels.contiguous(), -1, -2)
-                    #
-                    # # boundary_pts = [np.min(sampled_pcts, axis=0), np.max(sampled_pcts, axis=0)]
-                    # # center_pt = (boundary_pts[0] + boundary_pts[1]) / 2
-                    # # length_bb = np.linalg.norm(boundary_pts[0] - boundary_pts[1])
-                    # # for
-                    # # in_tensors: bz x 3 x N --> bz x N x 3 --> bz x n_s x N x 3
-                    # expand_xyz = safe_transpose(in_tensors, -1, -2).unsqueeze(1).contiguous().repeat(1, self.num_slots, 1, 1)
-                    #
-                    # pred_seg_to_pts_idxes = {} # predicted seg label to point indexes
-                    # for i_pts in range(pred_labels.size(1)):
-                    #     cur_pts_pred_label = int(pred_labels[0, i_pts].item())
-                    #     if cur_pts_pred_label not in pred_seg_to_pts_idxes:
-                    #         pred_seg_to_pts_idxes[cur_pts_pred_label] = [i_pts]
-                    #     else:
-                    #         pred_seg_to_pts_idxes[cur_pts_pred_label].append(i_pts)
-
+                    
+                    
                     in_tensors = data['pc'].cuda(non_blocking=True) # input tensor
                     bdim = in_tensors.shape[0]
                     in_label = data['label'].cuda(non_blocking=True)  # .reshape(-1)
@@ -1625,13 +1306,7 @@ class Trainer(vgtk.Trainer):
                         # Get predicted part_R and part_T: cur_part_R: 3 x 3; cur_part_T: 3
                         cur_part_R = canon_out_pred_R[0, pred_label, ...]
                         cur_part_T = canon_out_pred_T[0, pred_label, ...]
-                        # set_dr[i_p].append(cur_part_R)
-                        # set_dt[i_p].append(cur_part_T)
-                        # 3 x n_parts --> current part predicted xyz
-                        ''' Use original points for bounding box prediction '''
-                        # cur_part_xyz = in_tensors[0, :, cur_pred_pts_idxes]
-                        ''' Use original points for bounding box prediction '''
-                        ''' Use canonical points for bounding box prediction '''
+                        
                         cur_part_xyz = safe_transpose(canon_pc, 1, 2)[0, :, cur_pred_pts_idxes]
                         ''' Use canonical points for bounding box prediction '''
                         # center_pt: 3 x 1
@@ -1687,18 +1362,6 @@ class Trainer(vgtk.Trainer):
             for i_s in range(self.num_slots):
                 delta_rs[i_s] = torch.eye(3).cuda()
                 delta_ts[i_s] = torch.zeros((3,)).cuda()
-
-        ################## DEBUG ###############################
-        # for module in self.model.modules():
-        #     if isinstance(module, torch.nn.modules.BatchNorm1d):
-        #         module.train()
-        #     if isinstance(module, torch.nn.modules.BatchNorm2d):
-        #         module.train()
-        #     if isinstance(module, torch.nn.modules.BatchNorm3d):
-        #         module.train()
-            # if isinstance(module, torch.nn.Dropout):
-            #     module.train()
-        #####################################################
 
         with torch.no_grad():
             accs = [[] for i_iter in range(self.n_iters)]
@@ -2603,12 +2266,3 @@ class Trainer(vgtk.Trainer):
                         part_idx_to_pred_posed_canon_diff[gt_part_idx] = torch.cat(part_idx_to_pred_posed_canon_diff[gt_part_idx], dim=0).detach().cpu().numpy()
                     np.save(f"{self.shape_type}_part_idx_to_pred_posed_canon_diff.npy", part_idx_to_pred_posed_canon_diff)
 
-            # self.logger.log("Testing", 'Here to peek at the lmc') # we should infer pose information?
-            # self.logger.log("Testing", str(lmc))
-            # import ipdb; ipdb.set_trace()
-            # n = 1
-            # mAP = modelnet_retrieval_mAP(all_feats,all_labels,n)
-            # self.logger.log('Testing', 'Mean average precision at %d is %f!!!!'%(n, mAP))
-
-        # self.model.module.train()
-        # self.metric.train()

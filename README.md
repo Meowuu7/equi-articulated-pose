@@ -9,8 +9,8 @@ This is the official code repo of the paper:
 ## Links
 
 - [Project Page](https://equi-articulated-pose.github.io/)
-- [Openreview Page](https://openreview.net/forum?id=20GtJ6hIaPA)
 - [arXiv Page](https://arxiv.org/abs/2302.14268)
+- [Openreview Page](https://openreview.net/forum?id=20GtJ6hIaPA)
 
 ## TODOs
 
