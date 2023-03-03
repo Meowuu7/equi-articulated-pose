@@ -17,7 +17,6 @@ This is the official code repo of the paper:
 - [x] Training and test code
 - [x] Environments
 - [ ] Data
-- [ ] Add the arXiv Page
 
 ## Environment and package dependency
 
