@@ -46,6 +46,10 @@ bash scripts/train/${CATEGORY_NAME}.sh
 bash scripts/val/${CATEGORY_NAME}.sh
 ```
 
+## Checkpoints
+
+Please download trained models from [this link](https://drive.google.com/drive/folders/1tSg7-JjWCavrRiawdOyIVC4Tew-FnESc?usp=sharing) and put them under the folder `./ckpt`. 
+
 
 ## License
 
