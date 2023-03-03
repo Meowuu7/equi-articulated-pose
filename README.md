@@ -54,4 +54,4 @@ Our code and data are released under MIT License (see LICENSE file for details).
 
 ## Reference
 
-Part of the code is taken from [EPN](https://github.com/SimingYan/HPNet), [equi-pose](https://github.com/lingxiaoli94/SPFN).
+Part of the code is taken from [EPN](https://github.com/nintendops/EPN_PointCloud), [equi-pose](https://github.com/dragonlong/equi-pose).
