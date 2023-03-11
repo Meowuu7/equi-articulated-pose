@@ -1,6 +1,4 @@
-'''
-    ModelNet dataset. Support ModelNet40, ModelNet10, XYZ and normal channels. Up to 10000 points.
-'''
+
 
 import os
 import os.path
@@ -121,8 +119,6 @@ def rotate_by_vec_pts(un_w, p_x, bf_rotate_pos):
     return af_rotate_pos, rotation_matrix, np.reshape(trans, (3, 1))
 
 
-DATASET_ROOT_THU_LAB = ["/mnt/8T/xueyi/part-segmentation/data", "/mnt/sas-raid5-7.2T/xueyi/part-segmentation/data", "./data/part-segmentation/data", "/home/xueyi/inst-segmentation/data/part-segmentation/data"]
-
 
 class MotionDataset(data.Dataset):
     def __init__(
@@ -157,8 +153,6 @@ class MotionDataset(data.Dataset):
             self.use_multi_sample = 0
             self.n_samples = 1
 
-        print(f"no_articulation: {self.no_articulation}, equi_settings: {self.args.equi_settings.no_articulation}")
-
         self.train_ratio = 0.9
 
         self.shape_folders = []
@@ -166,40 +160,6 @@ class MotionDataset(data.Dataset):
         shape_idxes = os.listdir(self.shape_root)
         shape_idxes = sorted(shape_idxes)
         shape_idxes = [tmpp for tmpp in shape_idxes if tmpp[0] != "."]
-
-        if self.shape_type == "oven":
-            # not_ok_shape_idxes = [2, 3, 4, 6, 9, 15, 18, 23, 24, 28, 33, 34, 38]
-            not_ok_shape_idxes = [32, 35, 33, 42, 38, 36, 6, 41, 4, 15]
-            not_ok_shape_idxes = [4, 35, 38, 6, 15] # 10, 38, 31, 6, 15, 4, 35
-            not_ok_shape_idxes = [10, 38, 31, 6, 15, 4, 35]
-            not_ok_shape_idxes = [32, 35, 33, 18, 10, 21, 36, 31, 6, 24, 15, 40, 13, 38, 4] + [42, 30, 41, 22, 37, 39, 28, 29, 27, 26]
-            not_ok_shape_idxes = ["%.4d" % iii for iii in not_ok_shape_idxes]
-            not_ok_shape_idx_to_va = {str(iii): 1 for iii in not_ok_shape_idxes}
-            shape_idxes = [si for si in shape_idxes if si not in not_ok_shape_idx_to_va]
-        elif self.shape_type == "washing_machine":
-            not_ok_shape_idxes = [61, 59, 50, 57, 56, 58, 60, 2, 7, 38, 9, 31, 62, 53, 30, 1, 39, 52, 55, 46, 41, 40, 18,]
-            not_ok_shape_idxes = [50, 58, 2, 18, 29, 10, 7, 38, 9, 31, 30, 1, 39, 52, 46, 41, 40, 13]
-            not_ok_shape_idxes = [50, 58, 34, 2, 18, 27, 11, 29, 45, 28, 10, 21, 7, 38, 9, 31, 62, 30, 37, 8, 1, 6, 39, 52, 46, 41, 24, 12, 40, 13, 61, 59, 32, 35, 59]
-            not_ok_shape_idxes = ["%.4d" % iii for iii in not_ok_shape_idxes]
-            not_ok_shape_idx_to_va = {str(iii): 1 for iii in not_ok_shape_idxes}
-            shape_idxes = [si for si in shape_idxes if si not in not_ok_shape_idx_to_va]
-        elif self.shape_type == "eyeglasses":
-            not_ok_shape_idxes = [42]
-            not_ok_shape_idxes = [42, 20, 10]
-            not_ok_shape_idxes = [42, 20, 10, 3, 2, 9, 1] # some are added due to their large category-level distribution gap
-            not_ok_shape_idxes = [3, 33, 5, 2, 20, 11, 29, 16, 42, 28, 10, 19, 7, 38, 9, 30, 8, 1, 6, 41, 23, 15, 12, 13, 14]
-            not_ok_shape_idxes = [3, 33, 5, 2, 20, 11, 29, 16, 42, 28, 10, 19, 7, 38, 9, 30, 8, 1, 6, 41, 23, 15, 12, 13, 14, 4, 32, 28, 17]
-            not_ok_shape_idxes = ["%.4d" % iii for iii in not_ok_shape_idxes]
-            not_ok_shape_idx_to_va = {str(iii): 1 for iii in not_ok_shape_idxes}
-            shape_idxes = [si for si in shape_idxes if si not in not_ok_shape_idx_to_va]
-        elif self.shape_type == "laptop":
-            not_ok_shape_idxes = [83, 23]
-            not_ok_shape_idxes = [86, 83, 23, 73]
-            mode_1_idxes = [61, 50, 35, 34, 29, 72, 54, 8, 55, 79, 77, 85, 76]
-            mode_3_idxes = [57, 3, 51, 60, 33, 45, 17, 81, 86, 7, 31, 30, 63, 15, 71, 49, 40, 14, 77, 80, 81]
-            not_ok_shape_idxes = ["%.4d" % iii for iii in not_ok_shape_idxes]
-            not_ok_shape_idx_to_va = {str(iii): 1 for iii in not_ok_shape_idxes}
-            shape_idxes = [si for si in shape_idxes if si not in not_ok_shape_idx_to_va]
 
         train_nns = int(len(shape_idxes) * self.train_ratio)
 
@@ -211,7 +171,6 @@ class MotionDataset(data.Dataset):
             shape_idxes = shape_idxes[train_nns:]
 
         self.shape_idxes = shape_idxes
-        print(f"split: {self.split}, shape_idxes: {self.shape_idxes}")
 
         self.anchors = L.get_anchors(args.model.kanchor)
         equi_anchors = L.get_anchors(60)
@@ -224,52 +183,11 @@ class MotionDataset(data.Dataset):
         elif self.global_rot == 3:
             self.common_R = equi_anchors[7]
 
-        # self.anchors = torch.from_numpy(L.get_anchors(args.model.kanchor)).cuda()
         self.kanchor = args.model.kanchor
-
-
-    def get_trans_encoding_to_trans_dir(self):
-        trans_dir_to_trans_mode = {
-            (0, 1, 2): 1,
-            (0, 2): 2,
-            (0, 1): 3,
-            (1, 2): 4,
-            (0,): 5,
-            (1,): 6,
-            (2,): 7,
-            (): 0
-        }
-        self.trans_mode_to_trans_dir = {trans_dir_to_trans_mode[k]: k for k in trans_dir_to_trans_mode}
-        self.base_transition_vec = [
-            np.array([1.0, 0.0, 0.0], dtype=np.float),
-            np.array([0.0, 1.0, 0.0], dtype=np.float),
-            np.array([0.0, 0.0, 1.0], dtype=np.float),
-        ]
 
     def get_test_data(self):
         return self.test_data
 
-    def reindex_data_index(self):
-        old_idx_to_new_idx = {}
-        ii = 0
-        for old_idx in self.data:
-            old_idx_to_new_idx[old_idx] = ii
-            ii += 1
-        self.new_idx_to_old_idx = {old_idx_to_new_idx[k]: k for k in old_idx_to_new_idx}
-
-    def reindex_shape_seg(self, shape_seg):
-        old_seg_to_new_seg = {}
-        ii = 0
-        for i in range(shape_seg.shape[0]):
-            old_seg = int(shape_seg[i].item())
-            if old_seg not in old_seg_to_new_seg:
-                old_seg_to_new_seg[old_seg] = ii
-                ii += 1
-            new_seg = old_seg_to_new_seg[old_seg]
-            shape_seg[i] = new_seg
-            # old_seg_to_new_seg[old_seg] = ii
-            # ii += 1
-        return shape_seg
 
     def transit_pos_by_transit_vec(self, trans_pos):
         tdir = np.random.uniform(-1.0, 1.0, (3,))
@@ -446,342 +364,217 @@ class MotionDataset(data.Dataset):
         part_angles = []
 
 
-        if self.no_articulation == 0:
-            tot_transformed_pts = []
-            tot_transformation_mtx = []
-            tot_transformation_mtx_segs = []
-            canon_transformed_pts = []
-            rot_1 = False
-            for i_seg in range(len(cur_motion_attributes)):
-                if nparts is not None and i_seg >= nparts:
-                    continue
-                cur_seg_motion_info = cur_motion_attributes[i_seg]
-                if self.shape_type == "eyeglasses" and i_seg == 1:
-                    cur_seg_motion_info = cur_motion_attributes[i_seg + 1]
-                if self.shape_type == "eyeglasses" and i_seg == 2:
-                    cur_seg_motion_info = cur_motion_attributes[i_seg - 1]
-                # Get pts indexes for this segmentation
-                cur_seg_pts_idxes = np.array(seg_idx_to_sampled_pts[i_seg], dtype=np.long)
-                cur_seg_pts = sampled_pcts[cur_seg_pts_idxes]
-                # if self.shape_type == "eyeglasses" and i_seg == 2:
-                #     cur_seg_pts = (cur_seg_pts - np.reshape(np.array(cur_seg_motion_info["center"]), (1, 3))) * 1.5 + np.reshape(np.array(cur_seg_motion_info["center"]), (1, 3))
-                #     sampled_pcts[cur_seg_pts_idxes] = cur_seg_pts
-                if cur_seg_motion_info["motion_type"] == "rotation" and (rot_1 == False or self.shape_type == "eyeglasses"):
-                    center = cur_seg_motion_info["center"]
-                    axis = cur_seg_motion_info["direction"]
+        tot_transformed_pts = []
+        tot_transformation_mtx = []
+        tot_transformation_mtx_segs = []
+        canon_transformed_pts = []
+        rot_1 = False
+        for i_seg in range(len(cur_motion_attributes)):
+            if nparts is not None and i_seg >= nparts:
+                continue
+            cur_seg_motion_info = cur_motion_attributes[i_seg]
+            if self.shape_type == "eyeglasses" and i_seg == 1:
+                cur_seg_motion_info = cur_motion_attributes[i_seg + 1]
+            if self.shape_type == "eyeglasses" and i_seg == 2:
+                cur_seg_motion_info = cur_motion_attributes[i_seg - 1]
+            # Get pts indexes for this segmentation
+            cur_seg_pts_idxes = np.array(seg_idx_to_sampled_pts[i_seg], dtype=np.long)
+            cur_seg_pts = sampled_pcts[cur_seg_pts_idxes]
+            # if self.shape_type == "eyeglasses" and i_seg == 2:
+            #     cur_seg_pts = (cur_seg_pts - np.reshape(np.array(cur_seg_motion_info["center"]), (1, 3))) * 1.5 + np.reshape(np.array(cur_seg_motion_info["center"]), (1, 3))
+            #     sampled_pcts[cur_seg_pts_idxes] = cur_seg_pts
+            if cur_seg_motion_info["motion_type"] == "rotation" and (rot_1 == False or self.shape_type == "eyeglasses"):
+                center = cur_seg_motion_info["center"]
+                axis = cur_seg_motion_info["direction"]
 
-                    if self.use_multi_sample == 0:
-                        if self.shape_type in ['laptop', 'eyeglasses']:
-                            # if self.shape_type == 'eyeglasses' and nparts is not None:
-                            if self.shape_type == 'eyeglasses' and nparts is None:
-                                theta = (np.random.uniform(0.05, 1., (1,)).item() * np.pi) * self.rot_factor
-                                theta = -1. * theta
-                                # theta = (np.random.uniform(-0.35, 0.35, (1,)).item() * np.pi)
-                                # theta = (np.random.uniform(0., 1., (1,)).item() * np.pi - np.pi / 2.) * self.rot_factor
-                            else:
-                                theta = (np.random.uniform(0., 1., (1,)).item() * np.pi - np.pi / 2.) * self.rot_factor
-                        elif self.shape_type in ['oven', 'washing_machine']:
-                            theta = (np.random.uniform(0.5, 1., (1,)).item() * np.pi) * self.rot_factor
-                            # theta = (np.random.uniform(0., 135. / 180., (1,)).item() * np.pi)  # * self.rot_factor
-                            # theta = (((135. / 180.) / self.n_samples) * sample_index + 0.05) * np.pi  # * self.rot_factor
+                if self.use_multi_sample == 0:
+                    if self.shape_type in ['laptop', 'eyeglasses']:
+                        # if self.shape_type == 'eyeglasses' and nparts is not None:
+                        if self.shape_type == 'eyeglasses' and nparts is None:
+                            theta = (np.random.uniform(0.05, 1., (1,)).item() * np.pi) * self.rot_factor
+                            theta = -1. * theta
                         else:
-                            theta = (np.random.uniform(0., 1., (1,)).item() * np.pi) * self.rot_factor
+                            theta = (np.random.uniform(0., 1., (1,)).item() * np.pi - np.pi / 2.) * self.rot_factor
+                    elif self.shape_type in ['oven', 'washing_machine']:
+                        theta = (np.random.uniform(0.5, 1., (1,)).item() * np.pi) * self.rot_factor
                     else:
-                        if self.shape_type in ['laptop', 'eyeglasses']:
-                            # if self.shape_type == 'eyeglasses' and nparts is not None:
-                            if self.shape_type == 'eyeglasses' and nparts is None:
-                                # theta = (np.random.uniform(0., 1., (1,)).item() * np.pi) * self.rot_factor
-                                # theta = -1. * theta
-                                a_rot_idx = sample_index // 10
-                                b_rot_idx = sample_index % 10
-                                mult_factor = 0.45 if self.split == 'train' else 0.35
-                                if i_seg == 1:
-                                    # theta = (0.1 * (a_rot_idx ) * np.pi) * 0.4
-                                    # theta = (0.1 * (a_rot_idx ) * np.pi) * 0.45 # - 0.05
-                                    theta = (0.1 * (a_rot_idx ) * np.pi) * mult_factor # - 0.05
-                                    # theta = (0.1 * (a_rot_idx ) * np.pi) * 0.4 # - 0.05
-                                    # theta = (0.1 * (a_rot_idx ) * np.pi) * 0.35 # - 0.05
-                                    # theta = (0.1 * (a_rot_idx ) * np.pi) * 0.30 # - 0.05
-                                elif i_seg == 2:
-                                    # theta = (0.1 * (b_rot_idx ) * np.pi) * 0.4
-                                    # theta = (0.1 * (b_rot_idx ) * np.pi) * 0.45
-                                    theta = (0.1 * (b_rot_idx ) * np.pi) * mult_factor
-                                    # theta = (0.1 * (b_rot_idx ) * np.pi) * 0.4
-                                    # theta = (0.1 * (b_rot_idx ) * np.pi) * 0.35
-                                    # theta = (0.1 * (b_rot_idx ) * np.pi) * 0.30
-                                # theta = -1. * theta
-                                # if self.split != 'train':
-                                #     theta = theta + 0.05 * np.pi
-                                # theta = (np.random.uniform(0., 1., (1,)).item() * np.pi - np.pi / 2.) * self.rot_factor
-                            else:
-                                # theta = (np.random.uniform(0., 1., (1,)).item() * np.pi - np.pi / 2.) * self.rot_factor
-
-                                # theta = (0.5 / self.n_samples * sample_index * np.pi) # * self.rot_factor
-                                theta = (0.5 / self.n_samples * sample_index * np.pi) - 0.05 * np.pi
-                                # theta = (0.40 / self.n_samples * sample_index * np.pi) # * self.rot_factor
-                                # theta = (0.35 / self.n_samples * sample_index * np.pi) # * self.rot_factor
-                                theta = -1. * theta
-                        elif self.shape_type in ['oven', 'washing_machine']:
-                            # theta = (np.random.uniform(0.5, 1., (1,)).item() * np.pi) * self.rot_factor
-                            # theta = (((1.0 - 0.5) / self.n_samples) * sample_index + 0.05) * np.pi # * self.rot_factor
-                            # theta = (((135. / 180.) / self.n_samples) * sample_index + 0.15) * np.pi # * self.rot_factor
-                            # theta = (((115. / 180.) / self.n_samples) * sample_index + 30. / 180.) * np.pi # * self.rot_factor
-                            # theta = (((120. / 180.) / self.n_samples) * sample_index + 30. / 180.) * np.pi # * self.rot_factor
-                            ##### would cause global symmetry if we use the following setting #####
-                            if self.shape_type == 'washing_machine':
-                                if self.split == 'train':
-                                    theta = (((90. / 180.) / self.n_samples) * sample_index + 45. / 180.) * np.pi
-                                    # ''' for vis just '''
-                                    # theta = (((90. / 180.) / self.n_samples) * sample_index + 30. / 180.) * np.pi
-                                else:
-                                    # theta = (((10. / 180.) / self.n_samples) * sample_index + 90. / 180.) * np.pi # * self.rot_factor
-                                    theta = (((90. / 180.) / self.n_samples) * sample_index + 45. / 180.) * np.pi # * self.rot_factor
-                            # theta = (((70. / 180.) / self.n_samples) * sample_index + 45. / 180.) * np.pi # * self.rot_factor
-                            else:
-                                # theta = (((50. / 180.) / self.n_samples) * sample_index + 45. / 180.) * np.pi # * self.rot_factor
-                                theta = (((80. / 180.) / self.n_samples) * sample_index + 45. / 180.) * np.pi # * self.rot_factor
-                            # theta = (((135. / 180.) / self.n_samples) * sample_index + 0.20) * np.pi # * self.rot_factor
-                            # theta = (((135. / 180.) / self.n_samples) * sample_index) * np.pi # * self.rot_factor
-                        else:
-                            theta = (np.random.uniform(0., 1., (1,)).item() * np.pi) * self.rot_factor
-
-                    # Get transformed center (the center of the axis?)
-                    center = (center - center_pt) / length_bb
-                    # axis = (axis - center_pt) / length_bb
-
-                    part_angles.append(theta)
-
-                    part_axis.append(np.reshape(axis, (1, 3)))
-
-                    center_pt_offset = center - np.sum(axis * center, axis=0, keepdims=True) * axis
-                    center_pt_offset = np.sqrt(np.sum(center_pt_offset ** 2, axis=0))
-                    # part_pv_offset.append(np.reshap)
-                    part_pv_offset.append(center_pt_offset)
-                    part_pv_point.append(np.reshape(center, (1, 3)))
-
-                    ''' Transform points via revolute transformation '''
-                    # revolute part transformation from axis and theta...
-                    rot_pts, transformation_mtx = revoluteTransform(cur_seg_pts, center, axis, theta)
-                    transformation_mtx = np.transpose(transformation_mtx, (1, 0))
-
-                    rot_pts[:, :3] = np.matmul(np.reshape(R1, (1, 3, 3)), np.reshape(rot_pts[:, :3], (rot_pts.shape[0], 3, 1)))[:, :3, 0]
-                    transformation_mtx[:3] = np.matmul(R1, transformation_mtx[:3])
-                    ''' Transform points via revolute transformation '''
-
-                    ''' Get points state translations with centralized boudning box '''
-                    # rot_pts: n_pts_part x 3
-                    # rot pts minn; rot pts maxx
-                    rot_pts_minn = np.min(rot_pts[:, :3], axis=0)
-                    rot_pts_maxx = np.max(rot_pts[:, :3], axis=0)
-                    rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
-                    # print(f"transformation_mtx: {transformation_mtx[:3, 3].shape}, rot_pts_bbox_center: {rot_pts_bbox_center.shape}")
-                    cur_part_state_trans_bbox = transformation_mtx[:3, 3] - rot_pts_bbox_center
-                    part_state_trans_bbox.append(np.reshape(cur_part_state_trans_bbox, (1, 3)))
-
-
-                    ''' Set canonical angle via shape type '''
-                    canon_theta = 0.5 * np.pi
-                    if self.shape_type in ["laptop", "eyeglasses"]:
-                        canon_theta = 0.0
-                        if self.shape_type == "eyeglasses":
-                            canon_theta = 0.10 * np.pi
-                    if self.shape_type == "laptop":
-                        # canon_theta = (0.25 / self.n_samples * sample_index * np.pi)
-                        canon_theta = (0.25 * np.pi)
-                        canon_theta = canon_theta * (-1.0)
-                    #
-                    canon_rot_pts, canon_transformation_mtx = revoluteTransform(cur_seg_pts, center, axis, canon_theta)
-                    canon_transformation_mtx = np.transpose(canon_transformation_mtx, (1, 0))
-
-                    ''' Get points state translations with centralized boudning box '''
-                    # rot_pts: n_pts_part x 3
-                    canon_rot_pts_minn = np.min(canon_rot_pts[:, :3], axis=0)
-                    canon_rot_pts_maxx = np.max(canon_rot_pts[:, :3], axis=0)
-                    canon_rot_pts_bbox_center = (canon_rot_pts_minn + canon_rot_pts_maxx) / 2.
-                    cur_part_ref_trans_bbox = canon_transformation_mtx[:3, 3] - canon_rot_pts_bbox_center
-                    part_ref_trans_bbox.append(np.reshape(cur_part_ref_trans_bbox, (1, 3)))
-
-
-                    # transformation_mtx = np.transpose(transformation_mtx, (1, 0))
-                    transformation_mtx = np.reshape(transformation_mtx, (1, 4, 4))
-
-                    # cur_rot_mtx = transformation_mtx[0, :3, :3]
-                    # dot_product = np.dot(cur_rot_mtx, np.transpose(cur_rot_mtx, [1, 0]))
-                    # traces = dot_product[0, 0].item() + dot_product[1, 1].item() + dot_product[2, 2].item()
-                    # traces = float(traces) - 1.0; traces = traces / 2.
-                    # print(f"current traces: {traces}")
-
-                    tot_transformation_mtx += [transformation_mtx for _ in range(cur_seg_pts.shape[0])]
-                    tot_transformation_mtx_segs.append(transformation_mtx)
-
-                    part_state_rots.append(np.reshape(transformation_mtx[0, :3, :3], (1, 3, 3)))
-
-                    # canon_transformation_mtx = np.transpose(canon_transformation_mtx, (1, 0))
-                    part_ref_rots.append(np.reshape(canon_transformation_mtx[:3, :3], (1, 3, 3)))
-                    part_ref_trans.append(np.reshape(canon_transformation_mtx[:3, 3], (1, 3)))
-
-                    if self.pre_compute_delta == 1 and self.split == "train":
-                        tot_transformed_pts.append(canon_rot_pts[:, :3])
-                    else:
-                        tot_transformed_pts.append(rot_pts[:, :3])
-                    canon_transformed_pts.append(canon_rot_pts[:, :3])
-                    rot_1 = True
+                        theta = (np.random.uniform(0., 1., (1,)).item() * np.pi) * self.rot_factor
                 else:
-                    # rot_pts: n_pts_part x 3
-                    cur_seg_pts_minn = np.min(cur_seg_pts, axis=0)
-                    cur_seg_pts_maxx = np.max(cur_seg_pts, axis=0)
-                    cur_seg_pts_bbox_center = (cur_seg_pts_minn + cur_seg_pts_maxx) / 2.
-                    cur_part_ref_trans_bbox = -1. * cur_seg_pts_bbox_center
-                    canon_transformed_pts.append(cur_seg_pts)
+                    if self.shape_type in ['laptop', 'eyeglasses']:
+                        if self.shape_type == 'eyeglasses' and nparts is None:
+                            a_rot_idx = sample_index // 10
+                            b_rot_idx = sample_index % 10
+                            mult_factor = 0.45 if self.split == 'train' else 0.35
+                            if i_seg == 1:
+                                theta = (0.1 * (a_rot_idx ) * np.pi) * mult_factor
+                            elif i_seg == 2:
+                                theta = (0.1 * (b_rot_idx ) * np.pi) * mult_factor
+                        else:
+                            theta = (0.5 / self.n_samples * sample_index * np.pi) - 0.05 * np.pi
+                            theta = -1. * theta
+                    elif self.shape_type in ['oven', 'washing_machine']:
+                        if self.shape_type == 'washing_machine':
+                            theta = (((90. / 180.) / self.n_samples) * sample_index + 45. / 180.) * np.pi
+                        else:
+                            theta = (((80. / 180.) / self.n_samples) * sample_index + 45. / 180.) * np.pi
+                    else:
+                        theta = (np.random.uniform(0., 1., (1,)).item() * np.pi) * self.rot_factor
 
-                    rot_pts = np.zeros_like(cur_seg_pts)
-                    rot_pts[:, :] = cur_seg_pts[:, :]
-                    # rot_pts = cur_seg_pts
-                    rot_pts[:, :3] = np.matmul(np.reshape(R1, (1, 3, 3)),
-                                               np.reshape(rot_pts[:, :3], (rot_pts.shape[0], 3, 1)))[:, :3, 0]
-                    transformation_mtx = np.zeros((4, 4), dtype=np.float)
-                    transformation_mtx[0, 0] = 1.; transformation_mtx[1, 1] = 1.; transformation_mtx[2, 2] = 1.
-                    tot_transformed_pts.append(rot_pts)
-                    transformation_mtx[:3] = np.matmul(R1, transformation_mtx[:3])
+                # Get transformed center (the center of the axis?)
+                center = (center - center_pt) / length_bb
+                # axis = (axis - center_pt) / length_bb
 
-                    transformation_mtx = np.reshape(transformation_mtx, (1, 4, 4))
+                part_angles.append(theta)
 
-                    tot_transformation_mtx += [transformation_mtx for _ in range(cur_seg_pts.shape[0])]
-                    tot_transformation_mtx_segs.append(transformation_mtx)
+                part_axis.append(np.reshape(axis, (1, 3)))
+
+                center_pt_offset = center - np.sum(axis * center, axis=0, keepdims=True) * axis
+                center_pt_offset = np.sqrt(np.sum(center_pt_offset ** 2, axis=0))
+                # part_pv_offset.append(np.reshap)
+                part_pv_offset.append(center_pt_offset)
+                part_pv_point.append(np.reshape(center, (1, 3)))
 
 
-                    part_state_rots.append(np.reshape(transformation_mtx[0, :3, :3], (1, 3, 3)))
+                rot_pts, transformation_mtx = revoluteTransform(cur_seg_pts, center, axis, theta)
+                transformation_mtx = np.transpose(transformation_mtx, (1, 0))
 
-                    canon_transformation_mtx = np.zeros((4, 4), dtype=np.float)
-                    canon_transformation_mtx[0, 0] = 1.
-                    canon_transformation_mtx[1, 1] = 1.
-                    canon_transformation_mtx[2, 2] = 1.
-                    part_ref_rots.append(np.reshape(canon_transformation_mtx[:3, :3], (1, 3, 3)))
-                    part_ref_trans.append(np.zeros((1, 3), dtype=np.float))
+                rot_pts[:, :3] = np.matmul(np.reshape(R1, (1, 3, 3)), np.reshape(rot_pts[:, :3], (rot_pts.shape[0], 3, 1)))[:, :3, 0]
+                transformation_mtx[:3] = np.matmul(R1, transformation_mtx[:3])
+                ''' Transform points via revolute transformation '''
 
-                    ''' Get points state translations with centralized boudning box '''
-                    # rot_pts: n_pts_part x 3
-                    rot_pts_minn = np.min(rot_pts, axis=0)
-                    rot_pts_maxx = np.max(rot_pts, axis=0)
-                    rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
-                    cur_part_state_trans_bbox = -1. * rot_pts_bbox_center # state trans bbox
-                    part_state_trans_bbox.append(np.reshape(cur_part_state_trans_bbox, (1, 3)))
+                ''' Get points state translations with centralized boudning box '''
+                rot_pts_minn = np.min(rot_pts[:, :3], axis=0)
+                rot_pts_maxx = np.max(rot_pts[:, :3], axis=0)
+                rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
+                # print(f"transformation_mtx: {transformation_mtx[:3, 3].shape}, rot_pts_bbox_center: {rot_pts_bbox_center.shape}")
+                cur_part_state_trans_bbox = transformation_mtx[:3, 3] - rot_pts_bbox_center
+                part_state_trans_bbox.append(np.reshape(cur_part_state_trans_bbox, (1, 3)))
 
-                    ''' Ref transformation bbox '''
-                    # # rot_pts: n_pts_part x 3
-                    # rot_pts_minn = np.min(cur_seg_pts, axis=0)
-                    # rot_pts_maxx = np.max(rot_pts, axis=0)
-                    # rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
-                    # cur_part_state_trans_bbox = -1. * rot_pts_bbox_center
-                    part_ref_trans_bbox.append(np.reshape(cur_part_ref_trans_bbox, (1, 3)))
 
-            ''' Concatenate part axis '''
-            # part_axis: n_part x 3; part_axis: n_part x 3 --> part axis...
-            part_axis = np.concatenate(part_axis, axis=0)
-            part_axis = np.matmul(np.reshape(R1, (1, 3, 3)), np.reshape(part_axis, (part_axis.shape[0], 3, 1)))
-            part_axis = np.reshape(part_axis, (part_axis.shape[0], 3))
+                ''' Set canonical angle via shape type '''
+                canon_theta = 0.5 * np.pi
+                if self.shape_type in ["laptop", "eyeglasses"]:
+                    canon_theta = 0.0
+                    if self.shape_type == "eyeglasses":
+                        canon_theta = 0.10 * np.pi
+                if self.shape_type == "laptop":
+                    # canon_theta = (0.25 / self.n_samples * sample_index * np.pi)
+                    canon_theta = (0.25 * np.pi)
+                    canon_theta = canon_theta * (-1.0)
+                #
+                canon_rot_pts, canon_transformation_mtx = revoluteTransform(cur_seg_pts, center, axis, canon_theta)
+                canon_transformation_mtx = np.transpose(canon_transformation_mtx, (1, 0))
 
-            part_pv_offset = np.array(part_pv_offset)
+                ''' Get points state translations with centralized boudning box '''
+                # rot_pts: n_pts_part x 3
+                canon_rot_pts_minn = np.min(canon_rot_pts[:, :3], axis=0)
+                canon_rot_pts_maxx = np.max(canon_rot_pts[:, :3], axis=0)
+                canon_rot_pts_bbox_center = (canon_rot_pts_minn + canon_rot_pts_maxx) / 2.
+                cur_part_ref_trans_bbox = canon_transformation_mtx[:3, 3] - canon_rot_pts_bbox_center
+                part_ref_trans_bbox.append(np.reshape(cur_part_ref_trans_bbox, (1, 3)))
 
-            part_pv_point = np.concatenate(part_pv_point, axis=0)
-            part_pv_point = np.matmul(np.reshape(R1, (1, 3, 3)), np.reshape(part_pv_point, (part_pv_point.shape[0], 3, 1)))
-            part_pv_point = np.reshape(part_pv_point, (part_pv_point.shape[0], 3))
 
-            tot_transformed_pts = np.concatenate(tot_transformed_pts, axis=0)
-            canon_transformed_pts = np.concatenate(canon_transformed_pts, axis=0)
-            # print(tot_transformed_pts.shape)
+                # transformation_mtx = np.transpose(transformation_mtx, (1, 0))
+                transformation_mtx = np.reshape(transformation_mtx, (1, 4, 4))
 
-            ''' Use fake initial pose '''
-            # gt_pose = np.zeros((self.npoints, 4, 4), dtype=np.float)
-            # gt_pose[:, 0, 0] = 1.; gt_pose[:, 1, 1] = 1.; gt_pose[:, 2, 2] = 1.
+                tot_transformation_mtx += [transformation_mtx for _ in range(cur_seg_pts.shape[0])]
+                tot_transformation_mtx_segs.append(transformation_mtx)
 
-            ''' Use GT transformation matrix as initial pose '''
-            tot_transformation_mtx = np.concatenate(tot_transformation_mtx, axis=0)
-            tot_transformation_mtx_segs = np.concatenate(tot_transformation_mtx_segs, axis=0)
+                part_state_rots.append(np.reshape(transformation_mtx[0, :3, :3], (1, 3, 3)))
 
-            part_state_rots = np.concatenate(part_state_rots, axis=0)
-            part_ref_rots = np.concatenate(part_ref_rots, axis=0)
-            part_ref_trans = np.concatenate(part_ref_trans, axis=0)
-            ''' Get part_state_trans_bbox and part_ref_trans_bbox '''
-            part_state_trans_bbox = np.concatenate(part_state_trans_bbox, axis=0)
-            part_ref_trans_bbox = np.concatenate(part_ref_trans_bbox, axis=0)
-        else:
-            ''' !!!!!!!!!!!! '''
-            # print("here")
-            tot_transformed_pts = sampled_pcts
-            canon_transformed_pts = sampled_pcts
-            tot_transformation_mtx = np.zeros((sampled_pcts.shape[0], 4, 4), dtype=np.float)
-            tot_transformation_mtx[:, 0, 0] = 1.
-            tot_transformation_mtx[:, 1, 1] = 1.
-            tot_transformation_mtx[:, 2, 2] = 1.
-            pts_to_seg_idx = np.zeros((sampled_pcts.shape[0]), dtype=np.long)
-            ''' Set pts to label index '''
-            seg_idx = 0
-            for cur_seg_idx in seg_idx_to_sampled_pts:
-                cur_sampled_pts = np.array(seg_idx_to_sampled_pts[cur_seg_idx], dtype=np.long)
-                pts_to_seg_idx[cur_sampled_pts] = seg_idx
-                seg_idx += 1
-            ''' Set trivial transformation matrix for segs '''
-            seg_idx = 1 if seg_idx == 0 else seg_idx
-            tot_transformation_mtx_segs = np.zeros((seg_idx, 4, 4), dtype=np.float)
-            tot_transformation_mtx_segs[:, 0, 0] = 1.
-            tot_transformation_mtx_segs[:, 1, 1] = 1.
-            tot_transformation_mtx_segs[:, 2, 2] = 1.
+                # canon_transformation_mtx = np.transpose(canon_transformation_mtx, (1, 0))
+                part_ref_rots.append(np.reshape(canon_transformation_mtx[:3, :3], (1, 3, 3)))
+                part_ref_trans.append(np.reshape(canon_transformation_mtx[:3, 3], (1, 3)))
 
-            part_state_rots = np.zeros((seg_idx, 4, 4), dtype=np.float)
-            part_state_rots[:, 0, 0] = 1.
-            part_state_rots[:, 1, 1] = 1.
-            part_state_rots[:, 2, 2] = 1.
+                if self.pre_compute_delta == 1 and self.split == "train":
+                    tot_transformed_pts.append(canon_rot_pts[:, :3])
+                else:
+                    tot_transformed_pts.append(rot_pts[:, :3])
+                canon_transformed_pts.append(canon_rot_pts[:, :3])
+                rot_1 = True
+            else:
+                # rot_pts: n_pts_part x 3
+                cur_seg_pts_minn = np.min(cur_seg_pts, axis=0)
+                cur_seg_pts_maxx = np.max(cur_seg_pts, axis=0)
+                cur_seg_pts_bbox_center = (cur_seg_pts_minn + cur_seg_pts_maxx) / 2.
+                cur_part_ref_trans_bbox = -1. * cur_seg_pts_bbox_center
+                canon_transformed_pts.append(cur_seg_pts)
 
-            part_ref_rots = np.zeros((seg_idx, 4, 4), dtype=np.float)
-            part_ref_rots[:, 0, 0] = 1.
-            part_ref_rots[:, 1, 1] = 1.
-            part_ref_rots[:, 2, 2] = 1.
+                rot_pts = np.zeros_like(cur_seg_pts)
+                rot_pts[:, :] = cur_seg_pts[:, :]
+                # rot_pts = cur_seg_pts
+                rot_pts[:, :3] = np.matmul(np.reshape(R1, (1, 3, 3)),
+                                            np.reshape(rot_pts[:, :3], (rot_pts.shape[0], 3, 1)))[:, :3, 0]
+                transformation_mtx = np.zeros((4, 4), dtype=np.float)
+                transformation_mtx[0, 0] = 1.; transformation_mtx[1, 1] = 1.; transformation_mtx[2, 2] = 1.
+                tot_transformed_pts.append(rot_pts)
+                transformation_mtx[:3] = np.matmul(R1, transformation_mtx[:3])
 
-            part_ref_trans = np.zeros((seg_idx, 3), dtype=np.float)
+                transformation_mtx = np.reshape(transformation_mtx, (1, 4, 4))
 
+                tot_transformation_mtx += [transformation_mtx for _ in range(cur_seg_pts.shape[0])]
+                tot_transformation_mtx_segs.append(transformation_mtx)
+
+
+                part_state_rots.append(np.reshape(transformation_mtx[0, :3, :3], (1, 3, 3)))
+
+                canon_transformation_mtx = np.zeros((4, 4), dtype=np.float)
+                canon_transformation_mtx[0, 0] = 1.
+                canon_transformation_mtx[1, 1] = 1.
+                canon_transformation_mtx[2, 2] = 1.
+                part_ref_rots.append(np.reshape(canon_transformation_mtx[:3, :3], (1, 3, 3)))
+                part_ref_trans.append(np.zeros((1, 3), dtype=np.float))
+
+                ''' Get points state translations with centralized boudning box '''
+                # rot_pts: n_pts_part x 3
+                rot_pts_minn = np.min(rot_pts, axis=0)
+                rot_pts_maxx = np.max(rot_pts, axis=0)
+                rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
+                cur_part_state_trans_bbox = -1. * rot_pts_bbox_center # state trans bbox
+                part_state_trans_bbox.append(np.reshape(cur_part_state_trans_bbox, (1, 3)))
+
+                ''' Ref transformation bbox '''
+                # # rot_pts: n_pts_part x 3
+                # rot_pts_minn = np.min(cur_seg_pts, axis=0)
+                # rot_pts_maxx = np.max(rot_pts, axis=0)
+                # rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
+                # cur_part_state_trans_bbox = -1. * rot_pts_bbox_center
+                part_ref_trans_bbox.append(np.reshape(cur_part_ref_trans_bbox, (1, 3)))
+
+        ''' Concatenate part axis '''
+        # part_axis: n_part x 3; part_axis: n_part x 3 --> part axis...
+        part_axis = np.concatenate(part_axis, axis=0)
+        part_axis = np.matmul(np.reshape(R1, (1, 3, 3)), np.reshape(part_axis, (part_axis.shape[0], 3, 1)))
+        part_axis = np.reshape(part_axis, (part_axis.shape[0], 3))
+
+        part_pv_offset = np.array(part_pv_offset)
+
+        part_pv_point = np.concatenate(part_pv_point, axis=0)
+        part_pv_point = np.matmul(np.reshape(R1, (1, 3, 3)), np.reshape(part_pv_point, (part_pv_point.shape[0], 3, 1)))
+        part_pv_point = np.reshape(part_pv_point, (part_pv_point.shape[0], 3))
+
+        tot_transformed_pts = np.concatenate(tot_transformed_pts, axis=0)
+        canon_transformed_pts = np.concatenate(canon_transformed_pts, axis=0)
+        # print(tot_transformed_pts.shape)
+
+        ''' Use fake initial pose '''
+        # gt_pose = np.zeros((self.npoints, 4, 4), dtype=np.float)
+        # gt_pose[:, 0, 0] = 1.; gt_pose[:, 1, 1] = 1.; gt_pose[:, 2, 2] = 1.
+
+        ''' Use GT transformation matrix as initial pose '''
+        tot_transformation_mtx = np.concatenate(tot_transformation_mtx, axis=0)
+        tot_transformation_mtx_segs = np.concatenate(tot_transformation_mtx_segs, axis=0)
+
+        part_state_rots = np.concatenate(part_state_rots, axis=0)
+        part_ref_rots = np.concatenate(part_ref_rots, axis=0)
+        part_ref_trans = np.concatenate(part_ref_trans, axis=0)
+        ''' Get part_state_trans_bbox and part_ref_trans_bbox '''
+        part_state_trans_bbox = np.concatenate(part_state_trans_bbox, axis=0)
+        part_ref_trans_bbox = np.concatenate(part_ref_trans_bbox, axis=0)
+        
+        
         gt_pose = tot_transformation_mtx
         # tot_transformation_mt
-
-        # boundary_pts = [np.min(tot_transformed_pts, axis=0), np.max(tot_transformed_pts, axis=0)]
-        # center_pt = (boundary_pts[0] + boundary_pts[1]) / 2
-        # length_bb = np.linalg.norm(boundary_pts[0] - boundary_pts[1])
-        #
-        # # all normalize into 0
-        # tot_transformed_pts = (tot_transformed_pts - center_pt.reshape(1, 3)) / length_bb
-
-        ''' Add global rotation V1 --- Add the global rotation after articulation transformation '''
-        # ''' Add global rotation '''
-        # if self.global_rot == 1 and (not (self.split == "train" and self.pre_compute_delta == 1)):
-        #     if self.args.equi_settings.rot_anchors == 1:
-        #         # just use a matrix from rotation anchors
-        #         R1 = self.get_rotation_from_anchor()
-        #     else:
-        #         # R1 = generate_3d(smaller=True)
-        #         rotation_angle = sciR.random().as_matrix()
-        #         rotation_matrix = rotation_angle[:3, :3]
-        #         R1 = rotation_matrix
-        #
-        #     # rotate transformed points
-        #     tot_transformed_pts = np.transpose(np.matmul(R1, np.transpose(tot_transformed_pts, [1, 0])), [1, 0])
-        #     gt_pose = np.matmul(np.reshape(R1, (1, 3, 3)), gt_pose[:, :3, :])
-        #     gt_pose = np.concatenate([gt_pose, np.zeros((tot_transformed_pts.shape[0], 1, 4), dtype=np.float)], axis=1)
-        #     tot_transformation_mtx_segs[:, :3, :] = np.matmul(np.reshape(R1, (1, 3, 3)), tot_transformation_mtx_segs[:, :3, :])
-        #     part_state_rots[:, :3, :] = np.matmul(np.reshape(R1, (1, 3, 3)), part_state_rots[:, :3, :])
-        #     # part_ref_rots[:, :3, :] = np.matmul(np.reshape(R1, (1, 3, 3)), part_ref_rots[:, :3, :])
-        # elif self.global_rot == 2:
-        #     # Get base R
-        #     R1 = self.common_R
-        #     # rotate transformed points;
-        #     tot_transformed_pts = np.transpose(np.matmul(R1, np.transpose(tot_transformed_pts, [1, 0])), [1, 0])
-        #     gt_pose = np.matmul(np.reshape(R1, (1, 3, 3)), gt_pose[:, :3, :])
-        #     gt_pose = np.concatenate([gt_pose, np.zeros((tot_transformed_pts.shape[0], 1, 4), dtype=np.float)], axis=1)
-        #     tot_transformation_mtx_segs[:, :3, :] = np.matmul(np.reshape(R1, (1, 3, 3)),
-        #                                                       tot_transformation_mtx_segs[:, :3, :])
-        #     part_state_rots[:, :3, :] = np.matmul(np.reshape(R1, (1, 3, 3)), part_state_rots[:, :3, :])
-        #     # part_ref_rots[:, :3, :] = np.matmul(np.reshape(R1, (1, 3, 3)), part_ref_rots[:, :3, :])
-        ''' Add global rotation V1 --- Add the global rotation after articulation transformation '''
-
 
         if self.global_rot >= 0:
             af_glb_boundary_pts = [np.min(tot_transformed_pts, axis=0), np.max(tot_transformed_pts, axis=0)]
@@ -906,18 +699,4 @@ class MotionDataset(data.Dataset):
 
 
 if __name__ == '__main__':
-    d = ModelNetDataset(root='../data/modelnet40_normal_resampled', split='test')
-    print(d.shuffle)
-    print(len(d))
-    import time
-
-    tic = time.time()
-    for i in range(10):
-        ps, cls = d[i]
-    print(time.time() - tic)
-    print(ps.shape, type(ps), cls)
-
-    print(d.has_next_batch())
-    ps_batch, cls_batch = d.next_batch(True)
-    print(ps_batch.shape)
-    print(cls_batch.shape)
+    pass

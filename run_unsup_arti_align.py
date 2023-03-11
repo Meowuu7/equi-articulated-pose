@@ -1,6 +1,3 @@
-# from SPConvNets.trainer_modelnet import Trainer
-
-# import options
 from SPConvNets.options import opt
 
 import torch
@@ -29,7 +26,7 @@ if __name__ == '__main__':
         opt.train_loss.attention_loss_type = 'default'
     opt.batch_size = opt.equi_settings.bsz
     trainer = Trainer(opt)
-    trainer.mode =  opt.mode # "train"
+    trainer.mode =  opt.mode
     if opt.mode == 'train':
         trainer.train()
     elif opt.mode == 'eval':

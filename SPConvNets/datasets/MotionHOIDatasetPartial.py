@@ -428,9 +428,6 @@ def create_partial_pts(mean_pose=np.array([0, 0, -1.8]), std_pose=np.array([0.2,
     return seg_label_to_pts, seg_label_to_new_pose, glb_pose
 
 
-DATASET_ROOT_THU_LAB = ["/mnt/8T/xueyi/part-segmentation/data", "/mnt/sas-raid5-7.2T/xueyi/part-segmentation/data", "./data/part-segmentation/data", "/home/xueyi/inst-segmentation/data/part-segmentation/data"]
-
-
 class MotionDataset(data.Dataset):
     def __init__(
             self, root="./data/MDV02", npoints=512, split='train', nmask=10, shape_type="laptop", args=None, global_rot=0
@@ -828,386 +825,354 @@ class MotionDataset(data.Dataset):
         part_pv_point = []
         part_angles = []
 
-        if self.no_articulation == 0:
-            tot_transformed_pts = []
-            tot_transformation_mtx = []
-            tot_transformation_mtx_segs = []
-            tot_canon_transformation_mtx_segs = []
-            canon_transformed_pts = []
-            rot_1 = False
-            ''' Part idx to articulation transformed vertices '''
-            # motion
-            part_idx_to_transformed_vertices = {}
-            part_idx_to_canon_transformed_vertices = {}
-
-            tot_transformed_vertices = []
-            tot_canon_transformed_vertices = []
-
-            nn_part_idx_to_mob_attrs = {}
-
-            for sub_mob in mobility:
-                if "joint" in sub_mob:
-                    cur_joint_type = sub_mob["joint"]
-                    cur_joint_data = sub_mob["jointData"]
-
-                    if cur_joint_type == "铰链（旋转）":
-                        cur_joint_dir = cur_joint_data["axis"]["direction"]
-                        cur_origin_point = cur_joint_data["axis"]["origin"]
-                        cur_origin_point = np.array(cur_origin_point, dtype=np.float)
-                        cur_limit = cur_joint_data["limit"]
-                        cur_a, cur_b = float(cur_limit["a"]), float(cur_limit["b"])
-                        cur_origin_point = (cur_origin_point - center_pt) / length_bb
-                        if "parts" in sub_mob:
-                            cur_mob_parts = sub_mob["parts"]
-                            for cur_mob_part in cur_mob_parts:
-                                cur_part_idx = cur_mob_part["id"]
-                                cur_nn_part_idx = part_idx_to_nn_part_idx[cur_part_idx]
-
-                                cur_nn_part_idx_to_mob_attrs = {
-                                    "center": cur_origin_point,
-                                    "axis": cur_joint_dir
-                                }
-                                nn_part_idx_to_mob_attrs[cur_nn_part_idx] = cur_nn_part_idx_to_mob_attrs
-
-            for i_seg in range(nn_part_idx):
-                cur_seg_pts = part_idx_to_pcts[i_seg]
-                cur_seg_vertices = part_idx_to_vertices[i_seg]
-                cur_seg_triangles = part_idx_to_triangles[i_seg]
-                if i_seg in nn_part_idx_to_mob_attrs:
-                    cur_part_mob_attrs = nn_part_idx_to_mob_attrs[i_seg]
-                    center = cur_part_mob_attrs["center"]
-                    axis = cur_part_mob_attrs["axis"]
-
-                    # theta = ((0.5 / self.n_samples * sample_index - 0.05) * np.pi)
-                    theta = ((0.5 / self.n_samples * sample_index) * np.pi)
-                    if self.shape_type == 'laptop' or self.shape_type == 'safe':
-                        # theta = ((0.25 / self.n_samples * sample_index) * np.pi) # rearange the size of the angle
-
-                        # theta = ((0.5 / self.n_samples * sample_index) * np.pi)
-                        # theta = theta - (45. / 180.) * np.pi
 
 
-                        ''' A wrong setting... '''
-                        # theta = (((120. / 180.) / self.n_samples * sample_index) * np.pi) # [30, 120] --> [-60, 30] --> [0, 90]
-                        # theta = theta - (90. / 180.) * np.pi #
+        tot_transformed_pts = []
+        tot_transformation_mtx = []
+        tot_transformation_mtx_segs = []
+        tot_canon_transformation_mtx_segs = []
+        canon_transformed_pts = []
+        rot_1 = False
+        ''' Part idx to articulation transformed vertices '''
+        # motion
+        part_idx_to_transformed_vertices = {}
+        part_idx_to_canon_transformed_vertices = {}
 
-                        ''' Strategy 1 '''
-                        # theta = (((90. / 180.) / self.n_samples * sample_index) * np.pi)  # [30, 120] --> [-60, 30] --> [0, 90]
-                        # theta = theta - (60. / 180.) * np.pi #
-                        ''' Strategy 1 '''
+        tot_transformed_vertices = []
+        tot_canon_transformed_vertices = []
 
-                        theta = (((75. / 180.) / self.n_samples * sample_index) * np.pi)  # [45, 120] --> [-45, 30] --> [0, 75]
-                        theta = theta - (45. / 180.) * np.pi #
+        nn_part_idx_to_mob_attrs = {}
 
-                        ''' Only for figures '''
-                        # # [30, 115] --> [-60, 45] --> [0, 115]
-                        # theta = (((115. / 180.) / self.n_samples * sample_index) * np.pi)  # [45, 120] --> [-45, 30] --> [0, 75]
-                        # theta = theta - (60. / 180.) * np.pi  #
+        for sub_mob in mobility:
+            if "joint" in sub_mob:
+                cur_joint_type = sub_mob["joint"]
+                cur_joint_data = sub_mob["jointData"]
 
-                        # theta = theta + (45. / 180.) * np.pi
+                if cur_joint_type == "铰链（旋转）":
+                    cur_joint_dir = cur_joint_data["axis"]["direction"]
+                    cur_origin_point = cur_joint_data["axis"]["origin"]
+                    cur_origin_point = np.array(cur_origin_point, dtype=np.float)
+                    cur_limit = cur_joint_data["limit"]
+                    cur_a, cur_b = float(cur_limit["a"]), float(cur_limit["b"])
+                    cur_origin_point = (cur_origin_point - center_pt) / length_bb
+                    if "parts" in sub_mob:
+                        cur_mob_parts = sub_mob["parts"]
+                        for cur_mob_part in cur_mob_parts:
+                            cur_part_idx = cur_mob_part["id"]
+                            cur_nn_part_idx = part_idx_to_nn_part_idx[cur_part_idx]
 
-                    # center = (center - center_pt) / length_bb
-                    # axis = (axis - center_pt) / length_bb
+                            cur_nn_part_idx_to_mob_attrs = {
+                                "center": cur_origin_point,
+                                "axis": cur_joint_dir
+                            }
+                            nn_part_idx_to_mob_attrs[cur_nn_part_idx] = cur_nn_part_idx_to_mob_attrs
 
-                    part_angles.append(theta)
+        for i_seg in range(nn_part_idx):
+            cur_seg_pts = part_idx_to_pcts[i_seg]
+            cur_seg_vertices = part_idx_to_vertices[i_seg]
+            cur_seg_triangles = part_idx_to_triangles[i_seg]
+            if i_seg in nn_part_idx_to_mob_attrs:
+                cur_part_mob_attrs = nn_part_idx_to_mob_attrs[i_seg]
+                center = cur_part_mob_attrs["center"]
+                axis = cur_part_mob_attrs["axis"]
 
-                    ''' Get joint aixs direction and aix offset '''
-                    # part_axis.append(np.reshape(axis, (1, 3)))
-                    # center_pt_offset = center - axis * center
-                    center_pt_offset = center - np.sum(axis * center, axis=0, keepdims=True) * axis
-                    center_pt_offset = np.sqrt(np.sum(center_pt_offset ** 2, axis=0))
-                    # part_pv_offset.append(np.reshap)
-                    part_pv_offset.append(center_pt_offset)
-                    ''' Get joint aixs direction and axis offset '''
+                # theta = ((0.5 / self.n_samples * sample_index - 0.05) * np.pi)
+                theta = ((0.5 / self.n_samples * sample_index) * np.pi)
+                if self.shape_type == 'laptop' or self.shape_type == 'safe':
+                    # theta = ((0.25 / self.n_samples * sample_index) * np.pi) # rearange the size of the angle
 
-                    # part_pv_point.append(np.reshape(center, (1, 3)))
-
-                    rot_pts, transformation_mtx = revoluteTransform(cur_seg_pts, center, axis, theta)
-                    rot_cur_seg_vertices, transformation_mtx = revoluteTransform(cur_seg_vertices, center, axis, theta)
-                    transformation_mtx = np.transpose(transformation_mtx, (1, 0))
-
-                    ''' x-axis transformation '''
-                    # x_axis = np.array([1.0, 0.0, 0.0], dtype=np.float)
-                    # x_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
-                    # x_theta = -0.5 * np.pi
-                    #
-                    # rot_cur_seg_vertices, x_transformation_mtx = revoluteTransform(rot_cur_seg_vertices[:, :3],
-                    #                                                                x_center, x_axis, x_theta)
-                    # x_transformation_mtx = np.transpose(x_transformation_mtx, (1, 0))
-                    # transformation_mtx[:3, :] = np.matmul(x_transformation_mtx[:3, :3], transformation_mtx[:3, :])
-                    ''' x-axis transformation '''
-
-                    ''' y-axis transformation '''
-                    y_axis = np.array([0.0, 1.0, 0.0], dtype=np.float)
-                    y_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
-                    y_theta = -0.5 * np.pi
-
-                    rot_cur_seg_vertices, y_transformation_mtx = revoluteTransform(rot_cur_seg_vertices[:, :3],
-                                                                                   y_center, y_axis, y_theta)
-                    y_transformation_mtx = np.transpose(y_transformation_mtx, (1, 0))
-                    transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], transformation_mtx[:3, :])
-                    cur_part_axis = np.matmul(y_transformation_mtx[:3, :3], np.reshape(axis, (3, 1)))
-                    cur_part_axis = np.reshape(cur_part_axis, (1, 3))
-                    part_axis.append(cur_part_axis)
-
-                    cur_pv_point = np.matmul(y_transformation_mtx[:3, :3], np.reshape(center, (3, 1)))
-                    cur_pv_point = np.reshape(cur_pv_point, (1, 3))
-                    part_pv_point.append(cur_pv_point)
-                    ''' y-axis transformation '''
-
-                    tot_transformed_vertices.append(rot_cur_seg_vertices[:, :3])
-                    part_idx_to_transformed_vertices[i_seg] = rot_cur_seg_vertices[:, :3]
-
-                    ''' Global transformation --> for complete pcs '''
-                    # rot_pts[:, :3] = np.matmul(np.reshape(R1, (1, 3, 3)),
-                    #                            np.reshape(rot_pts[:, :3], (rot_pts.shape[0], 3, 1)))[:, :3, 0]
-                    # transformation_mtx[:3] = np.matmul(R1, transformation_mtx[:3])
-                    ''' Global transformation --> for complete pcs '''
-                    ''' Transform points via revolute transformation '''
-
-                    ''' Get points state translations with centralized boudning box '''
-                    # todo: set transformed bbox later
-                    # # rot_pts: n_pts_part x 3
-                    # # rot pts minn; rot pts maxx
-                    # rot_pts_minn = np.min(rot_pts[:, :3], axis=0)
-                    # rot_pts_maxx = np.max(rot_pts[:, :3], axis=0)
-                    # rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
-                    # # print(f"transformation_mtx: {transformation_mtx[:3, 3].shape}, rot_pts_bbox_center: {rot_pts_bbox_center.shape}")
-                    # cur_part_state_trans_bbox = transformation_mtx[:3, 3] - rot_pts_bbox_center
-                    # part_state_trans_bbox.append(np.reshape(cur_part_state_trans_bbox, (1, 3)))
-
-                    ''' Set canonical angle via shape type '''
-                    canon_theta = 0.5 * np.pi
-                    if self.shape_type in ["laptop", "eyeglasses", "safe"]:
-                        canon_theta = 0.0
-                    canon_rot_pts, canon_transformation_mtx = revoluteTransform(cur_seg_pts, center, axis, canon_theta)
-                    canon_rot_vertices, canon_transformation_mtx = revoluteTransform(cur_seg_vertices, center, axis, canon_theta)
-                    canon_transformation_mtx = np.transpose(canon_transformation_mtx, (1, 0))
-
-                    ''' Transform the canonical points --- x-transformation'''
-                    # canon_rot_vertices, x_transformation_mtx = revoluteTransform(canon_rot_vertices[:, :3],
-                    #                                                              x_center, x_axis, x_theta)
-                    # x_transformation_mtx = np.transpose(x_transformation_mtx, (1, 0))
-                    # canon_transformation_mtx[:3, :] = np.matmul(x_transformation_mtx[:3, :3],
-                    #                                             canon_transformation_mtx[:3, :])
-                    ''' Transform the canonical points --- x-transformation'''
-
-                    ''' Transform the canonical points --- y-transformation'''
-                    canon_rot_vertices, y_transformation_mtx = revoluteTransform(canon_rot_vertices[:, :3],
-                                                                                   y_center, y_axis, y_theta)
-                    y_transformation_mtx = np.transpose(y_transformation_mtx, (1, 0))
-                    canon_transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], canon_transformation_mtx[:3, :])
-                    ''' Transform the canonical points --- y-transformation'''
-
-                    tot_canon_transformed_vertices.append(canon_rot_vertices[:, :3])
-
-                    part_idx_to_canon_transformed_vertices[i_seg] = canon_rot_vertices[:, :3]
+                    # theta = ((0.5 / self.n_samples * sample_index) * np.pi)
+                    # theta = theta - (45. / 180.) * np.pi
 
 
-                    ''' Get points state translations with centralized boudning box '''
-                    # rot_pts: n_pts_part x 3
-                    # canon_rot_pts_minn = np.min(canon_rot_pts[:, :3], axis=0)
-                    # canon_rot_pts_maxx = np.max(canon_rot_pts[:, :3], axis=0)
-                    # canon_rot_pts_bbox_center = (canon_rot_pts_minn + canon_rot_pts_maxx) / 2.
-                    # cur_part_ref_trans_bbox = canon_transformation_mtx[:3, 3] - canon_rot_pts_bbox_center
+                    ''' A wrong setting... '''
+                    # theta = (((120. / 180.) / self.n_samples * sample_index) * np.pi) # [30, 120] --> [-60, 30] --> [0, 90]
+                    # theta = theta - (90. / 180.) * np.pi #
 
-                    canon_rot_pts_minn = np.min(canon_rot_vertices[:, :3], axis=0)
-                    canon_rot_pts_maxx = np.max(canon_rot_vertices[:, :3], axis=0)
-                    canon_rot_pts_bbox_center = (canon_rot_pts_minn + canon_rot_pts_maxx) / 2.
-                    cur_part_ref_trans_bbox = canon_transformation_mtx[:3, 3] - canon_rot_pts_bbox_center
-                    # Set part ref transformation bbox centralized
-                    part_ref_trans_bbox.append(np.reshape(cur_part_ref_trans_bbox, (1, 3)))
+                    ''' Strategy 1 '''
+                    # theta = (((90. / 180.) / self.n_samples * sample_index) * np.pi)  # [30, 120] --> [-60, 30] --> [0, 90]
+                    # theta = theta - (60. / 180.) * np.pi #
+                    ''' Strategy 1 '''
 
-                    # transformation_mtx = np.transpose(transformation_mtx, (1, 0))
-                    transformation_mtx = np.reshape(transformation_mtx, (1, 4, 4))
-                    # tot_transformation_mtx += [transformation_mtx for _ in range(cur_seg_pts.shape[0])]
-                    tot_transformation_mtx_segs.append(transformation_mtx) # and we can set transformation mtx here?
+                    theta = (((75. / 180.) / self.n_samples * sample_index) * np.pi)  # [45, 120] --> [-45, 30] --> [0, 75]
+                    theta = theta - (45. / 180.) * np.pi #
 
-                    canon_transformation_mtx = np.reshape(canon_transformation_mtx, (1, 4, 4))
-                    tot_canon_transformation_mtx_segs.append(canon_transformation_mtx)
+                    ''' Only for figures '''
+                    # # [30, 115] --> [-60, 45] --> [0, 115]
+                    # theta = (((115. / 180.) / self.n_samples * sample_index) * np.pi)  # [45, 120] --> [-45, 30] --> [0, 75]
+                    # theta = theta - (60. / 180.) * np.pi  #
 
-                    part_state_rots.append(np.reshape(transformation_mtx[0, :3, :3], (1, 3, 3))) # state rots...
+                    # theta = theta + (45. / 180.) * np.pi
 
-                    # canon_transformation_mtx = np.transpose(canon_transformation_mtx, (1, 0))
-                    part_ref_rots.append(np.reshape(canon_transformation_mtx[0, :3, :3], (1, 3, 3)))
-                    part_ref_trans.append(np.reshape(canon_transformation_mtx[0, :3, 3], (1, 3)))
+                # center = (center - center_pt) / length_bb
+                # axis = (axis - center_pt) / length_bb
 
-                    if self.pre_compute_delta == 1 and self.split == "train":
-                        tot_transformed_pts.append(canon_rot_pts[:, :3])
-                    else:
-                        tot_transformed_pts.append(rot_pts[:, :3])
-                    canon_transformed_pts.append(canon_rot_pts[:, :3])
-                    rot_1 = True
+                part_angles.append(theta)
+
+                ''' Get joint aixs direction and aix offset '''
+                # part_axis.append(np.reshape(axis, (1, 3)))
+                # center_pt_offset = center - axis * center
+                center_pt_offset = center - np.sum(axis * center, axis=0, keepdims=True) * axis
+                center_pt_offset = np.sqrt(np.sum(center_pt_offset ** 2, axis=0))
+                # part_pv_offset.append(np.reshap)
+                part_pv_offset.append(center_pt_offset)
+                ''' Get joint aixs direction and axis offset '''
+
+                # part_pv_point.append(np.reshape(center, (1, 3)))
+
+                rot_pts, transformation_mtx = revoluteTransform(cur_seg_pts, center, axis, theta)
+                rot_cur_seg_vertices, transformation_mtx = revoluteTransform(cur_seg_vertices, center, axis, theta)
+                transformation_mtx = np.transpose(transformation_mtx, (1, 0))
+
+                ''' x-axis transformation '''
+                # x_axis = np.array([1.0, 0.0, 0.0], dtype=np.float)
+                # x_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
+                # x_theta = -0.5 * np.pi
+                #
+                # rot_cur_seg_vertices, x_transformation_mtx = revoluteTransform(rot_cur_seg_vertices[:, :3],
+                #                                                                x_center, x_axis, x_theta)
+                # x_transformation_mtx = np.transpose(x_transformation_mtx, (1, 0))
+                # transformation_mtx[:3, :] = np.matmul(x_transformation_mtx[:3, :3], transformation_mtx[:3, :])
+                ''' x-axis transformation '''
+
+                ''' y-axis transformation '''
+                y_axis = np.array([0.0, 1.0, 0.0], dtype=np.float)
+                y_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
+                y_theta = -0.5 * np.pi
+
+                rot_cur_seg_vertices, y_transformation_mtx = revoluteTransform(rot_cur_seg_vertices[:, :3],
+                                                                                y_center, y_axis, y_theta)
+                y_transformation_mtx = np.transpose(y_transformation_mtx, (1, 0))
+                transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], transformation_mtx[:3, :])
+                cur_part_axis = np.matmul(y_transformation_mtx[:3, :3], np.reshape(axis, (3, 1)))
+                cur_part_axis = np.reshape(cur_part_axis, (1, 3))
+                part_axis.append(cur_part_axis)
+
+                cur_pv_point = np.matmul(y_transformation_mtx[:3, :3], np.reshape(center, (3, 1)))
+                cur_pv_point = np.reshape(cur_pv_point, (1, 3))
+                part_pv_point.append(cur_pv_point)
+                ''' y-axis transformation '''
+
+                tot_transformed_vertices.append(rot_cur_seg_vertices[:, :3])
+                part_idx_to_transformed_vertices[i_seg] = rot_cur_seg_vertices[:, :3]
+
+                ''' Global transformation --> for complete pcs '''
+                # rot_pts[:, :3] = np.matmul(np.reshape(R1, (1, 3, 3)),
+                #                            np.reshape(rot_pts[:, :3], (rot_pts.shape[0], 3, 1)))[:, :3, 0]
+                # transformation_mtx[:3] = np.matmul(R1, transformation_mtx[:3])
+                ''' Global transformation --> for complete pcs '''
+                ''' Transform points via revolute transformation '''
+
+                ''' Get points state translations with centralized boudning box '''
+                # todo: set transformed bbox later
+                # # rot_pts: n_pts_part x 3
+                # # rot pts minn; rot pts maxx
+                # rot_pts_minn = np.min(rot_pts[:, :3], axis=0)
+                # rot_pts_maxx = np.max(rot_pts[:, :3], axis=0)
+                # rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
+                # # print(f"transformation_mtx: {transformation_mtx[:3, 3].shape}, rot_pts_bbox_center: {rot_pts_bbox_center.shape}")
+                # cur_part_state_trans_bbox = transformation_mtx[:3, 3] - rot_pts_bbox_center
+                # part_state_trans_bbox.append(np.reshape(cur_part_state_trans_bbox, (1, 3)))
+
+                ''' Set canonical angle via shape type '''
+                canon_theta = 0.5 * np.pi
+                if self.shape_type in ["laptop", "eyeglasses", "safe"]:
+                    canon_theta = 0.0
+                canon_rot_pts, canon_transformation_mtx = revoluteTransform(cur_seg_pts, center, axis, canon_theta)
+                canon_rot_vertices, canon_transformation_mtx = revoluteTransform(cur_seg_vertices, center, axis, canon_theta)
+                canon_transformation_mtx = np.transpose(canon_transformation_mtx, (1, 0))
+
+                ''' Transform the canonical points --- x-transformation'''
+                # canon_rot_vertices, x_transformation_mtx = revoluteTransform(canon_rot_vertices[:, :3],
+                #                                                              x_center, x_axis, x_theta)
+                # x_transformation_mtx = np.transpose(x_transformation_mtx, (1, 0))
+                # canon_transformation_mtx[:3, :] = np.matmul(x_transformation_mtx[:3, :3],
+                #                                             canon_transformation_mtx[:3, :])
+                ''' Transform the canonical points --- x-transformation'''
+
+                ''' Transform the canonical points --- y-transformation'''
+                canon_rot_vertices, y_transformation_mtx = revoluteTransform(canon_rot_vertices[:, :3],
+                                                                                y_center, y_axis, y_theta)
+                y_transformation_mtx = np.transpose(y_transformation_mtx, (1, 0))
+                canon_transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], canon_transformation_mtx[:3, :])
+                ''' Transform the canonical points --- y-transformation'''
+
+                tot_canon_transformed_vertices.append(canon_rot_vertices[:, :3])
+
+                part_idx_to_canon_transformed_vertices[i_seg] = canon_rot_vertices[:, :3]
+
+
+                ''' Get points state translations with centralized boudning box '''
+                # rot_pts: n_pts_part x 3
+                # canon_rot_pts_minn = np.min(canon_rot_pts[:, :3], axis=0)
+                # canon_rot_pts_maxx = np.max(canon_rot_pts[:, :3], axis=0)
+                # canon_rot_pts_bbox_center = (canon_rot_pts_minn + canon_rot_pts_maxx) / 2.
+                # cur_part_ref_trans_bbox = canon_transformation_mtx[:3, 3] - canon_rot_pts_bbox_center
+
+                canon_rot_pts_minn = np.min(canon_rot_vertices[:, :3], axis=0)
+                canon_rot_pts_maxx = np.max(canon_rot_vertices[:, :3], axis=0)
+                canon_rot_pts_bbox_center = (canon_rot_pts_minn + canon_rot_pts_maxx) / 2.
+                cur_part_ref_trans_bbox = canon_transformation_mtx[:3, 3] - canon_rot_pts_bbox_center
+                # Set part ref transformation bbox centralized
+                part_ref_trans_bbox.append(np.reshape(cur_part_ref_trans_bbox, (1, 3)))
+
+                # transformation_mtx = np.transpose(transformation_mtx, (1, 0))
+                transformation_mtx = np.reshape(transformation_mtx, (1, 4, 4))
+                # tot_transformation_mtx += [transformation_mtx for _ in range(cur_seg_pts.shape[0])]
+                tot_transformation_mtx_segs.append(transformation_mtx) # and we can set transformation mtx here?
+
+                canon_transformation_mtx = np.reshape(canon_transformation_mtx, (1, 4, 4))
+                tot_canon_transformation_mtx_segs.append(canon_transformation_mtx)
+
+                part_state_rots.append(np.reshape(transformation_mtx[0, :3, :3], (1, 3, 3))) # state rots...
+
+                # canon_transformation_mtx = np.transpose(canon_transformation_mtx, (1, 0))
+                part_ref_rots.append(np.reshape(canon_transformation_mtx[0, :3, :3], (1, 3, 3)))
+                part_ref_trans.append(np.reshape(canon_transformation_mtx[0, :3, 3], (1, 3)))
+
+                if self.pre_compute_delta == 1 and self.split == "train":
+                    tot_transformed_pts.append(canon_rot_pts[:, :3])
                 else:
+                    tot_transformed_pts.append(rot_pts[:, :3])
+                canon_transformed_pts.append(canon_rot_pts[:, :3])
+                rot_1 = True
+            else:
 
-                    #
-                    # rot_pts = np.zeros_like(cur_seg_pts)
-                    # rot_pts[:, :] = cur_seg_pts[:, :]
-                    # # rot_pts = cur_seg_pts
-                    # rot_pts[:, :3] = np.matmul(np.reshape(R1, (1, 3, 3)),
-                    #                            np.reshape(rot_pts[:, :3], (rot_pts.shape[0], 3, 1)))[:, :3, 0]
+                #
+                # rot_pts = np.zeros_like(cur_seg_pts)
+                # rot_pts[:, :] = cur_seg_pts[:, :]
+                # # rot_pts = cur_seg_pts
+                # rot_pts[:, :3] = np.matmul(np.reshape(R1, (1, 3, 3)),
+                #                            np.reshape(rot_pts[:, :3], (rot_pts.shape[0], 3, 1)))[:, :3, 0]
 
-                    transformation_mtx = np.zeros((4, 4), dtype=np.float)
-                    transformation_mtx[0, 0] = 1.;
-                    transformation_mtx[1, 1] = 1.;
-                    transformation_mtx[2, 2] = 1.
+                transformation_mtx = np.zeros((4, 4), dtype=np.float)
+                transformation_mtx[0, 0] = 1.;
+                transformation_mtx[1, 1] = 1.;
+                transformation_mtx[2, 2] = 1.
 
-                    ''' Strategy 1 --- only y-axis transformation '''
-                    # y_axis = np.array([0.0, 1.0, 0.0], dtype=np.float)
-                    # y_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
-                    # y_theta = -0.5 * np.pi
-                    #
-                    # cur_seg_vertices, y_transformation_mtx = revoluteTransform(cur_seg_vertices[:, :3],
-                    #                                                                y_center, y_axis, y_theta)
-                    # y_transformation_mtx = np.transpose(y_transformation_mtx, (1, 0))
-                    # transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], transformation_mtx[:3, :])
-                    ''' Strategy 1 --- only y-axis transformation '''
+                ''' Strategy 1 --- only y-axis transformation '''
+                # y_axis = np.array([0.0, 1.0, 0.0], dtype=np.float)
+                # y_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
+                # y_theta = -0.5 * np.pi
+                #
+                # cur_seg_vertices, y_transformation_mtx = revoluteTransform(cur_seg_vertices[:, :3],
+                #                                                                y_center, y_axis, y_theta)
+                # y_transformation_mtx = np.transpose(y_transformation_mtx, (1, 0))
+                # transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], transformation_mtx[:3, :])
+                ''' Strategy 1 --- only y-axis transformation '''
 
-                    ''' x-axis transformation '''
-                    # x_axis = np.array([1.0, 0.0, 0.0], dtype=np.float)
-                    # x_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
-                    # x_theta = -0.5 * np.pi
-                    #
-                    # cur_seg_vertices, x_transformation_mtx = revoluteTransform(cur_seg_vertices[:, :3],
-                    #                                                            x_center, x_axis, x_theta)
-                    # x_transformation_mtx = np.transpose(x_transformation_mtx, (1, 0))
-                    # transformation_mtx[:3, :] = np.matmul(x_transformation_mtx[:3, :3], transformation_mtx[:3, :])
-                    ''' x-axis transformation '''
+                ''' x-axis transformation '''
+                # x_axis = np.array([1.0, 0.0, 0.0], dtype=np.float)
+                # x_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
+                # x_theta = -0.5 * np.pi
+                #
+                # cur_seg_vertices, x_transformation_mtx = revoluteTransform(cur_seg_vertices[:, :3],
+                #                                                            x_center, x_axis, x_theta)
+                # x_transformation_mtx = np.transpose(x_transformation_mtx, (1, 0))
+                # transformation_mtx[:3, :] = np.matmul(x_transformation_mtx[:3, :3], transformation_mtx[:3, :])
+                ''' x-axis transformation '''
 
-                    ''' y-axis transformation '''
-                    y_axis = np.array([0.0, 1.0, 0.0], dtype=np.float)
-                    y_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
-                    y_theta = -0.5 * np.pi
+                ''' y-axis transformation '''
+                y_axis = np.array([0.0, 1.0, 0.0], dtype=np.float)
+                y_center = np.array([0.0, 0.0, 0.0], dtype=np.float)
+                y_theta = -0.5 * np.pi
 
-                    cur_seg_vertices, y_transformation_mtx = revoluteTransform(cur_seg_vertices[:, :3],
-                                                                               y_center, y_axis, y_theta)
-                    y_transformation_mtx = np.transpose(y_transformation_mtx, (1, 0))
-                    transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], transformation_mtx[:3, :])
-                    ''' y-axis transformation '''
+                cur_seg_vertices, y_transformation_mtx = revoluteTransform(cur_seg_vertices[:, :3],
+                                                                            y_center, y_axis, y_theta)
+                y_transformation_mtx = np.transpose(y_transformation_mtx, (1, 0))
+                transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], transformation_mtx[:3, :])
+                ''' y-axis transformation '''
 
-                    # rot_pts: n_pts_part x 3
-                    cur_seg_pts_minn = np.min(cur_seg_vertices[:, :3], axis=0)
-                    cur_seg_pts_maxx = np.max(cur_seg_vertices[:, :3], axis=0)
-                    cur_seg_pts_bbox_center = (cur_seg_pts_minn + cur_seg_pts_maxx) / 2.
-                    cur_part_ref_trans_bbox = -1. * cur_seg_pts_bbox_center
-                    canon_transformed_pts.append(cur_seg_pts)
-
-
-
-                    tot_transformed_vertices.append(cur_seg_vertices[:, :3])
-                    tot_canon_transformed_vertices.append(cur_seg_vertices[:, :3])
-
-
-                    # tot_transformed_pts.append(rot_pts)
-                    # transformation_mtx[:3] = np.matmul(R1, transformation_mtx[:3])
-
-                    transformation_mtx = np.reshape(transformation_mtx, (1, 4, 4))
+                # rot_pts: n_pts_part x 3
+                cur_seg_pts_minn = np.min(cur_seg_vertices[:, :3], axis=0)
+                cur_seg_pts_maxx = np.max(cur_seg_vertices[:, :3], axis=0)
+                cur_seg_pts_bbox_center = (cur_seg_pts_minn + cur_seg_pts_maxx) / 2.
+                cur_part_ref_trans_bbox = -1. * cur_seg_pts_bbox_center
+                canon_transformed_pts.append(cur_seg_pts)
 
 
-                    # tot_transformation_mtx += [transformation_mtx for _ in range(cur_seg_pts.shape[0])]
-                    tot_transformation_mtx_segs.append(transformation_mtx) # register for trnaformation-segs...
 
-                    # Get state rotation matrix...
-                    part_state_rots.append(np.reshape(transformation_mtx[0, :3, :3], (1, 3, 3)))
+                tot_transformed_vertices.append(cur_seg_vertices[:, :3])
+                tot_canon_transformed_vertices.append(cur_seg_vertices[:, :3])
 
-                    part_idx_to_canon_transformed_vertices[i_seg] = cur_seg_vertices[:, :3]
-                    part_idx_to_transformed_vertices[i_seg] = cur_seg_vertices[:, :3]
 
-                    # Canonical rotation/transformation matrix
-                    canon_transformation_mtx = np.zeros((4, 4), dtype=np.float)
-                    canon_transformation_mtx[0, 0] = 1.
-                    canon_transformation_mtx[1, 1] = 1.
-                    canon_transformation_mtx[2, 2] = 1.
-                    ''' Canonical transformation --- x-transformation '''
-                    # canon_transformation_mtx[:3, :] = np.matmul(x_transformation_mtx[:3, :3],
-                    #                                             canon_transformation_mtx[:3, :])
-                    ''' Canonical transformation --- x-transformation '''
-                    ''' Canonical transformation --- y-transformation '''
-                    canon_transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], canon_transformation_mtx[:3, :])
-                    ''' Canonical transformation --- y-transformation '''
+                # tot_transformed_pts.append(rot_pts)
+                # transformation_mtx[:3] = np.matmul(R1, transformation_mtx[:3])
 
-                    part_ref_rots.append(np.reshape(canon_transformation_mtx[:3, :3], (1, 3, 3)))
-                    part_ref_trans.append(np.zeros((1, 3), dtype=np.float))
+                transformation_mtx = np.reshape(transformation_mtx, (1, 4, 4))
 
-                    canon_transformation_mtx = np.reshape(canon_transformation_mtx, (1, 4, 4))
-                    tot_canon_transformation_mtx_segs.append(canon_transformation_mtx)
 
-                    ''' Get points state translations with centralized boudning box '''
-                    # todo: set state bbox trans later...
-                    # # rot_pts: n_pts_part x 3
-                    # rot_pts_minn = np.min(rot_pts, axis=0)
-                    # rot_pts_maxx = np.max(rot_pts, axis=0)
-                    # rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
-                    # cur_part_state_trans_bbox = -1. * rot_pts_bbox_center  # state trans bbox
-                    # part_state_trans_bbox.append(np.reshape(cur_part_state_trans_bbox, (1, 3)))
+                # tot_transformation_mtx += [transformation_mtx for _ in range(cur_seg_pts.shape[0])]
+                tot_transformation_mtx_segs.append(transformation_mtx) # register for trnaformation-segs...
 
-                    ''' Ref transformation bbox '''
-                    # # rot_pts: n_pts_part x 3
-                    # rot_pts_minn = np.min(cur_seg_pts, axis=0)
-                    # rot_pts_maxx = np.max(rot_pts, axis=0)
-                    # rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
-                    # cur_part_state_trans_bbox = -1. * rot_pts_bbox_center
-                    part_ref_trans_bbox.append(np.reshape(cur_part_ref_trans_bbox, (1, 3)))
+                # Get state rotation matrix...
+                part_state_rots.append(np.reshape(transformation_mtx[0, :3, :3], (1, 3, 3)))
 
-            # tot_transformed_pts = np.concatenate(tot_transformed_pts, axis=0)
-            # canon_transformed_pts = np.concatenate(canon_transformed_pts, axis=0)
+                part_idx_to_canon_transformed_vertices[i_seg] = cur_seg_vertices[:, :3]
+                part_idx_to_transformed_vertices[i_seg] = cur_seg_vertices[:, :3]
 
-            ''' Concatenate part axis direction and part axis offset '''
-            # part_axis: n_part x 3; part_axis: n_part x 3 --> part axis...
-            part_axis = np.concatenate(part_axis, axis=0)
-            # part_axis = np.matmul(np.reshape(R1, (1, 3, 3)), np.reshape(part_axis, (part_axis.shape[0], 3, 1)))
-            # part_axis = np.reshape(part_axis, (part_axis.shape[0], 3))
+                # Canonical rotation/transformation matrix
+                canon_transformation_mtx = np.zeros((4, 4), dtype=np.float)
+                canon_transformation_mtx[0, 0] = 1.
+                canon_transformation_mtx[1, 1] = 1.
+                canon_transformation_mtx[2, 2] = 1.
+                ''' Canonical transformation --- x-transformation '''
+                # canon_transformation_mtx[:3, :] = np.matmul(x_transformation_mtx[:3, :3],
+                #                                             canon_transformation_mtx[:3, :])
+                ''' Canonical transformation --- x-transformation '''
+                ''' Canonical transformation --- y-transformation '''
+                canon_transformation_mtx[:3, :] = np.matmul(y_transformation_mtx[:3, :3], canon_transformation_mtx[:3, :])
+                ''' Canonical transformation --- y-transformation '''
 
-            part_pv_offset = np.array(part_pv_offset)
-            part_pv_point = np.concatenate(part_pv_point, axis=0)
-            ''' Concatenate part axis direction and part axis offset '''
+                part_ref_rots.append(np.reshape(canon_transformation_mtx[:3, :3], (1, 3, 3)))
+                part_ref_trans.append(np.zeros((1, 3), dtype=np.float))
 
-            ''' Use GT transformation matrix as initial pose ''' #
-            # tot_transformation_mtx = np.concatenate(tot_transformation_mtx, axis=0)
-            tot_transformation_mtx_segs = np.concatenate(tot_transformation_mtx_segs, axis=0)
-            tot_canon_transformation_mtx_segs = np.concatenate(tot_canon_transformation_mtx_segs, axis=0)
+                canon_transformation_mtx = np.reshape(canon_transformation_mtx, (1, 4, 4))
+                tot_canon_transformation_mtx_segs.append(canon_transformation_mtx)
 
-            part_state_rots = np.concatenate(part_state_rots, axis=0)
-            part_ref_rots = np.concatenate(part_ref_rots, axis=0)
-            part_ref_trans = np.concatenate(part_ref_trans, axis=0)
-            ''' Get part_state_trans_bbox and part_ref_trans_bbox '''
-            # part_state_trans_bbox = np.concatenate(part_state_trans_bbox, axis=0)
-            part_ref_trans_bbox = np.concatenate(part_ref_trans_bbox, axis=0)
-            tot_transformed_vertices = np.concatenate(tot_transformed_vertices, axis=0)
-            tot_canon_transformed_vertices = np.concatenate(tot_canon_transformed_vertices, axis=0)
-        else:
-            ''' !!!!!!!! '''
-            tot_transformed_pts = sampled_pcts
-            canon_transformed_pts = sampled_pcts
-            tot_transformation_mtx = np.zeros((sampled_pcts.shape[0], 4, 4), dtype=np.float)
-            tot_transformation_mtx[:, 0, 0] = 1.
-            tot_transformation_mtx[:, 1, 1] = 1.
-            tot_transformation_mtx[:, 2, 2] = 1.
-            pts_to_seg_idx = np.zeros((sampled_pcts.shape[0]), dtype=np.long)
-            ''' Set pts to label index '''
-            seg_idx = 0
-            for cur_seg_idx in part_idx_to_pcts:
-                cur_sampled_pts = np.array(part_idx_to_pcts[cur_seg_idx], dtype=np.long)
-                pts_to_seg_idx[cur_sampled_pts] = seg_idx
-                seg_idx += 1
-            ''' Set trivial transformation matrix for segs '''
-            seg_idx = 1 if seg_idx == 0 else seg_idx
-            tot_transformation_mtx_segs = np.zeros((seg_idx, 4, 4), dtype=np.float)
-            tot_transformation_mtx_segs[:, 0, 0] = 1.
-            tot_transformation_mtx_segs[:, 1, 1] = 1.
-            tot_transformation_mtx_segs[:, 2, 2] = 1.
+                ''' Get points state translations with centralized boudning box '''
+                # todo: set state bbox trans later...
+                # # rot_pts: n_pts_part x 3
+                # rot_pts_minn = np.min(rot_pts, axis=0)
+                # rot_pts_maxx = np.max(rot_pts, axis=0)
+                # rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
+                # cur_part_state_trans_bbox = -1. * rot_pts_bbox_center  # state trans bbox
+                # part_state_trans_bbox.append(np.reshape(cur_part_state_trans_bbox, (1, 3)))
 
-            part_state_rots = np.zeros((seg_idx, 4, 4), dtype=np.float)
-            part_state_rots[:, 0, 0] = 1.
-            part_state_rots[:, 1, 1] = 1.
-            part_state_rots[:, 2, 2] = 1.
+                ''' Ref transformation bbox '''
+                # # rot_pts: n_pts_part x 3
+                # rot_pts_minn = np.min(cur_seg_pts, axis=0)
+                # rot_pts_maxx = np.max(rot_pts, axis=0)
+                # rot_pts_bbox_center = (rot_pts_minn + rot_pts_maxx) / 2.
+                # cur_part_state_trans_bbox = -1. * rot_pts_bbox_center
+                part_ref_trans_bbox.append(np.reshape(cur_part_ref_trans_bbox, (1, 3)))
 
-            part_ref_rots = np.zeros((seg_idx, 4, 4), dtype=np.float)
-            part_ref_rots[:, 0, 0] = 1.
-            part_ref_rots[:, 1, 1] = 1.
-            part_ref_rots[:, 2, 2] = 1.
+        # tot_transformed_pts = np.concatenate(tot_transformed_pts, axis=0)
+        # canon_transformed_pts = np.concatenate(canon_transformed_pts, axis=0)
 
-            part_ref_trans = np.zeros((seg_idx, 3), dtype=np.float)
+        ''' Concatenate part axis direction and part axis offset '''
+        # part_axis: n_part x 3; part_axis: n_part x 3 --> part axis...
+        part_axis = np.concatenate(part_axis, axis=0)
+        # part_axis = np.matmul(np.reshape(R1, (1, 3, 3)), np.reshape(part_axis, (part_axis.shape[0], 3, 1)))
+        # part_axis = np.reshape(part_axis, (part_axis.shape[0], 3))
+
+        part_pv_offset = np.array(part_pv_offset)
+        part_pv_point = np.concatenate(part_pv_point, axis=0)
+        ''' Concatenate part axis direction and part axis offset '''
+
+        ''' Use GT transformation matrix as initial pose ''' #
+        # tot_transformation_mtx = np.concatenate(tot_transformation_mtx, axis=0)
+        tot_transformation_mtx_segs = np.concatenate(tot_transformation_mtx_segs, axis=0)
+        tot_canon_transformation_mtx_segs = np.concatenate(tot_canon_transformation_mtx_segs, axis=0)
+
+        part_state_rots = np.concatenate(part_state_rots, axis=0)
+        part_ref_rots = np.concatenate(part_ref_rots, axis=0)
+        part_ref_trans = np.concatenate(part_ref_trans, axis=0)
+        ''' Get part_state_trans_bbox and part_ref_trans_bbox '''
+        # part_state_trans_bbox = np.concatenate(part_state_trans_bbox, axis=0)
+        part_ref_trans_bbox = np.concatenate(part_ref_trans_bbox, axis=0)
+        tot_transformed_vertices = np.concatenate(tot_transformed_vertices, axis=0)
+        tot_canon_transformed_vertices = np.concatenate(tot_canon_transformed_vertices, axis=0)
 
         gt_pose = tot_transformation_mtx
 
@@ -1407,18 +1372,4 @@ class MotionDataset(data.Dataset):
 
 
 if __name__ == '__main__':
-    d = ModelNetDataset(root='../data/modelnet40_normal_resampled', split='test')
-    print(d.shuffle)
-    print(len(d))
-    import time
-
-    tic = time.time()
-    for i in range(10):
-        ps, cls = d[i]
-    print(time.time() - tic)
-    print(ps.shape, type(ps), cls)
-
-    print(d.has_next_batch())
-    ps_batch, cls_batch = d.next_batch(True)
-    print(ps_batch.shape)
-    print(cls_batch.shape)
+    pass

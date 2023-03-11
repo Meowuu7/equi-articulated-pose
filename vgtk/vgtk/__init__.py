@@ -3,10 +3,8 @@ from . import point3d
 # from . import image
 # from . import mesh
 from . import pc
-# from . import voxel
 from . import spconv
 from . import so3conv
-# from . import so3poseconv
 
 from .app import *
 from .loss import *

@@ -194,7 +194,6 @@ class Trainer(vgtk.Trainer):
                 cur_dataset = MotionDatasetPartial if self.shape_type != DATASET_DRAWER else MotionSAPIENDatasetPartial
             val_str = "val" if self.shape_type != DATASET_DRAWER else "test"
 
-            ''' Shapes from motion segmentation dataset '''
             if self.opt.mode == 'train' or self.opt.mode == "eval":
                 dataset = cur_dataset(
                     root="./data/MDV02", #
@@ -236,8 +235,7 @@ class Trainer(vgtk.Trainer):
 
             self.shape_type = self.opt_shape_type
 
-            global_rot = self.opt.equi_settings.global_rot  # whether using global rotation
-            ''' Shapes from motion segmentation dataset '''
+            global_rot = self.opt.equi_settings.global_rot 
             if self.opt.mode == 'train' or self.opt.mode == "eval":
                 dataset = MotionDataset2(
                     root="./data/MDV02",  #
@@ -630,12 +628,6 @@ class Trainer(vgtk.Trainer):
         # pred = torch.softmax(pred, dim=-1)
         # bz x npred-class x N
 
-        # pred = pred.contiguous().transpose(1, 2).contiguous()
-        #
-        # if pred.size(1) < 200:
-        #     pred = torch.cat(
-        #         [pred, torch.zeros((bz, 200 - pred.size(1), N), dtype=torch.float32).cuda(non_blocking=True)], dim=1
-        #     )
 
         label = torch.eye(self.model.module.num_slots)[in_label].cuda(non_blocking=True)
         label, gt_conf = self.get_gt_conf(label)

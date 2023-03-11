@@ -4,7 +4,7 @@ This is the official code repo of the paper:
 
 [Self-Supervised Category-Level Articulated Object Pose Estimation with Part-Level SE(3) Equivariance](https://equi-articulated-pose.github.io/), *Xueyi Liu*, *Ji Zhang*, *Ruizhen Hu*, *Haibin Huang*, *He Wang*, *Li Yi*, ICLR 2023.
 
-![overall_pipeline](./assets/Picture1.png)
+![overall_pipeline](./assets/fig_github.png)
 
 ## Links
 
@@ -12,11 +12,6 @@ This is the official code repo of the paper:
 - [arXiv Page](https://arxiv.org/abs/2302.14268)
 - [Openreview Page](https://openreview.net/forum?id=20GtJ6hIaPA)
 
-## TODOs
-
-- [x] Training and test code
-- [x] Environments
-- [ ] Data
 
 ## Environment and package dependency
 
@@ -32,7 +27,7 @@ cd vgtk && python setup.py install && cd ..
 
 ## Data
 
-TODO
+Please download data from [this link](https://drive.google.com/drive/folders/1SG1aPtJLlVp-rV34YqY_Az_Bru5XxKsc?usp=sharing) and put them under the folder `./datas`. 
 
 ## Training
 
@@ -53,7 +48,7 @@ Please download trained models from [this link](https://drive.google.com/drive/f
 
 ## License
 
-Our code and data are released under MIT License (see LICENSE file for details).
+The majority of the code is licensed under an Apache License 2.0 (see LICENSE file for details).
 
 
 ## Reference

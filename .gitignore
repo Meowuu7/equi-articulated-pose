@@ -21,7 +21,7 @@ data/*
 # text file for logging
 *.txt
 
-
+ckpt/
 
 # Distribution / packaging
 .Python
