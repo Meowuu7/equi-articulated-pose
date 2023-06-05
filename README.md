@@ -71,4 +71,4 @@ The majority of the code is licensed under an Apache License 2.0 (see LICENSE fi
 
 ## Reference
 
-Part of the code is taken from [EPN](https://github.com/nintendops/EPN_PointCloud), [equi-pose](https://github.com/dragonlong/equi-pose).
+Part of the code is taken from [EPN](https://github.com/nintendops/EPN_PointCloud), [equi-pose](https://github.com/dragonlong/equi-pose). Thank you to the authors of these projects for their great work.
