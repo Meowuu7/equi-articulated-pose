@@ -2,7 +2,7 @@
 
 This is the official code repo of the paper:
 
-[Self-Supervised Category-Level Articulated Object Pose Estimation with Part-Level SE(3) Equivariance](https://equi-articulated-pose.github.io/), *Xueyi Liu*, *Ji Zhang*, *Ruizhen Hu*, *Haibin Huang*, *He Wang*, *Li Yi*, ICLR 2023.
+[Self-Supervised Category-Level Articulated Object Pose Estimation with Part-Level SE(3) Equivariance](https://equi-articulated-pose.github.io/), ICLR 2023.
 
 ![overall_pipeline](./assets/fig_github.png)
 
@@ -27,7 +27,7 @@ cd vgtk && python setup.py install && cd ..
 
 ## Data
 
-Please download data from [this link](https://drive.google.com/drive/folders/1SG1aPtJLlVp-rV34YqY_Az_Bru5XxKsc?usp=sharing) and put them under the folder `./datas`. 
+Please download data from [this link](https://drive.google.com/drive/folders/1SG1aPtJLlVp-rV34YqY_Az_Bru5XxKsc?usp=sharing) and put them under the folder `./data`. 
 
 ## Training
 
@@ -44,6 +44,11 @@ bash scripts/val/${CATEGORY_NAME}.sh
 ## Checkpoints
 
 Please download trained models from [this link](https://drive.google.com/drive/folders/1tSg7-JjWCavrRiawdOyIVC4Tew-FnESc?usp=sharing) and put them under the folder `./ckpt`. 
+
+
+## Contact
+
+Feel free to contact me at xymeow7@gmail.com or create a Github issue if you have any question regarding the repository. Thanks for your interest.
 
 
 ## Citation

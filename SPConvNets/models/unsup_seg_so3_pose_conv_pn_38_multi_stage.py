@@ -1710,7 +1710,7 @@ class ClsSO3ConvModel(nn.Module):
                                                    dim=2).squeeze(-1)
 
 
-            print("slot_orbits", slot_orbits)  # register slot_orbits...
+            # print("slot_orbits", slot_orbits)  # register slot_orbits...
 
             # selected_anchors: bz x n_s x 3 x 3
             selected_anchors = batched_index_select(values=cur_anchors, indices=slot_orbits, dim=0)

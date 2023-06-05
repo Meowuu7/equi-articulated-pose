@@ -3,10 +3,9 @@
 
 export resume_path="./ckpt/oven_stage_0.pth"
 
-# export input_num=512
+
 export input_num=380
 
-# export part_pred_npoints=256
 export part_pred_npoints=128
 
 
