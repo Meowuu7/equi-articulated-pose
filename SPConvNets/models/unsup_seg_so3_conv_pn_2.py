@@ -13,7 +13,7 @@ import SPConvNets.utils.base_so3poseconv as M
 import vgtk.so3conv.functional as L
 import vgtk.so3conv as sptk
 # from SPConvNets.utils.slot_attention import SlotAttention
-from SPConvNets.utils.slot_attention_orbit import SlotAttention
+# from SPConvNets.utils.slot_attention_orbit import SlotAttention
 import vgtk.spconv as zptk
 from SPConvNets.utils.loss_util import batched_index_select
 from extensions.chamfer_dist import ChamferDistance

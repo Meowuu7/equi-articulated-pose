@@ -417,7 +417,6 @@ class MotionDataset(data.Dataset):
         self.global_rot = global_rot
         self.split = split
         self.rot_factor = self.args.equi_settings.rot_factor
-        self.no_articulation = self.args.equi_settings.no_articulation
         self.pre_compute_delta = self.args.equi_settings.pre_compute_delta
         self.use_multi_sample = self.args.equi_settings.use_multi_sample
         self.n_samples = self.args.equi_settings.n_samples if self.use_multi_sample == 1 else 1

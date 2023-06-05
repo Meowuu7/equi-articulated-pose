@@ -1,4 +1,6 @@
 
+export PYTHONPATH=.
+
 export resume_path_glb="./ckpt/oven_stage_0.pth"
 
 export resume_path="./ckpt/oven_stage_1.pth"

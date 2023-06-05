@@ -13,8 +13,8 @@ import SPConvNets.utils.base_so3poseconv as M
 import SPConvNets.utils.base_so3conv as Mso3
 import vgtk.so3conv.functional as L
 import vgtk.so3conv as sptk
-from SPConvNets.utils.slot_attention import SlotAttention
-from SPConvNets.utils.slot_attention_spec import SlotAttention
+# from SPConvNets.utils.slot_attention import SlotAttention
+# from SPConvNets.utils.slot_attention_spec import SlotAttention
 from SPConvNets.utils.slot_attention_spec_v2 import SlotAttention
 # from SPConvNets.utils.slot_attention_orbit import SlotAttention
 # import vgtk.spconv as zptk

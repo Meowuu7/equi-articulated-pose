@@ -140,7 +140,6 @@ class MotionDataset(data.Dataset):
         self.global_rot = global_rot
         self.split = split
         self.rot_factor = self.args.equi_settings.rot_factor
-        self.no_articulation = self.args.equi_settings.no_articulation
         self.pre_compute_delta = self.args.equi_settings.pre_compute_delta
 
         print(f"no_articulation: {self.no_articulation}, equi_settings: {self.args.equi_settings.no_articulation}")

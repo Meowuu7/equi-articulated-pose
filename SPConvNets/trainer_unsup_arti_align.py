@@ -1,7 +1,7 @@
 from importlib import import_module
 from SPConvNets.datasets.MotionDataset import MotionDataset
 from SPConvNets.datasets.MotionDataset2 import MotionDataset as MotionDataset2
-from SPConvNets.datasets.MotionSAPIENDataset import MotionDataset as MotionSAPIENDataset
+# from SPConvNets.datasets.MotionSAPIENDataset import MotionDataset as MotionSAPIENDataset
 # from SPConvNets.datasets.MotionHOIDatasetNPCS import MotionDataset as MotionHOIDataset
 from SPConvNets.datasets.MotionHOIDataset import MotionDataset as MotionHOIDataset
 try:
@@ -13,10 +13,10 @@ try:
 except:
     pass
 
-try:
-    from SPConvNets.datasets.MotionSAPIENDatasetPartial import MotionDataset as MotionSAPIENDatasetPartial
-except:
-    pass
+# try:
+#     from SPConvNets.datasets.MotionSAPIENDatasetPartial import MotionDataset as MotionSAPIENDatasetPartial
+# except:
+#     pass
 
 
 

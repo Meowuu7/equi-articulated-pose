@@ -46,6 +46,21 @@ bash scripts/val/${CATEGORY_NAME}.sh
 Please download trained models from [this link](https://drive.google.com/drive/folders/1tSg7-JjWCavrRiawdOyIVC4Tew-FnESc?usp=sharing) and put them under the folder `./ckpt`. 
 
 
+## Citation
+
+If you find the code useful for your research, please cite our paper.
+
+```
+@inproceedings{liu2023self,
+  title={Self-Supervised Category-Level Articulated Object Pose Estimation with Part-Level SE (3) Equivariance},
+  author={Liu, Xueyi and Zhang, Ji and Hu, Ruizhen and Huang, Haibin and Wang, He and Yi, Li},
+  booktitle={The Eleventh International Conference on Learning Representations},
+  year={2023}
+}
+```
+
+
+
 ## License
 
 The majority of the code is licensed under an Apache License 2.0 (see LICENSE file for details).

@@ -13,6 +13,8 @@ import vgtk.so3conv.functional as L
 from SPConvNets.datasets.part_transform import revoluteTransform
 from SPConvNets.models.model_util import *
 
+# 
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, 'utils'))
@@ -24,6 +26,8 @@ import scipy.io as sio
 import copy
 # from model.utils import farthest_point_sampling
 
+## peer ##
+## peer peer ##
 # padding 1
 def padding_1(pos):
     pad = np.array([1.], dtype=np.float).reshape(1, 1)
@@ -73,7 +77,7 @@ def decode_rotation_info(rotate_info_encoding):
     else:
         return []
 
-
+### rotate ###
 def rotate_by_vec_pts(un_w, p_x, bf_rotate_pos):
 
     def get_zero_distance(p, xyz):
@@ -140,7 +144,6 @@ class MotionDataset(data.Dataset):
         self.global_rot = global_rot
         self.split = split
         self.rot_factor = self.args.equi_settings.rot_factor
-        self.no_articulation = self.args.equi_settings.no_articulation
         self.pre_compute_delta = self.args.equi_settings.pre_compute_delta
         self.use_multi_sample = self.args.equi_settings.use_multi_sample
         self.n_samples = self.args.equi_settings.n_samples if self.use_multi_sample == 1 else 1
