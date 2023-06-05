@@ -1,8 +1,6 @@
 # Equi-Articulated-Pose
 
-This is the official code repo of the paper:
-
-[Self-Supervised Category-Level Articulated Object Pose Estimation with Part-Level SE(3) Equivariance](https://equi-articulated-pose.github.io/), ICLR 2023.
+Code repository for our paper [Self-Supervised Category-Level Articulated Object Pose Estimation with Part-Level SE(3) Equivariance](https://equi-articulated-pose.github.io/). 
 
 ![overall_pipeline](./assets/fig_github.png)
 
