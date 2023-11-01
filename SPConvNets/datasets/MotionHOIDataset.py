@@ -150,8 +150,6 @@ class MotionDataset(data.Dataset):
             self.use_multi_sample = 0
             self.n_samples = 1
 
-        print(f"no_articulation: {self.no_articulation}, equi_settings: {self.args.equi_settings.no_articulation}")
-
         self.train_ratio = 0.9
 
         self.shape_folders = []

@@ -1,17 +1,14 @@
 
 export resume_path="./ckpt/safe_stage_0.pth"
 
-# export input_num=512
 export input_num=380
 
-# export part_pred_npoints=256
 export part_pred_npoints=128
 
 export cuda_ids=0,1,2,3,4,5,6,7
 export num_gpus=8
 
 export recon_prior=6
-# export recon_prior=9
 
 export sel_mode_trans=18
 
